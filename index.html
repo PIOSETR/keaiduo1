@@ -329,10 +329,10 @@
 <div class="info">
     <h3>🎀 凯蒂猫使用说明 🎀</h3>
     <p>1. 选择单元和课时，设置每个词读几遍（最多3遍）。</p>
-    <p>2. 点击 🎀 开始默写，使用**百度真人标准普通话**朗读。</p>
+    <p>2. 点击 🎀 开始默写，使用**标准普通话**朗读。</p>
     <p>3. 默写过程中可以随时点击 ⏸️ 暂停，休息好了再点 ▶️ 继续。</p>
     <p>4. 如果不想写了，点击 ⏹️ 停止 即可重新开始。</p>
-    <p style="color:#ff1493; margin-top:5px;">💖 发音：标准真人普通话，清晰无机械音！</p>
+    <p style="color:#ff1493; margin-top:5px;">💖 发音：清晰标准普通话，已优化安卓兼容性！</p>
 </div>
 
 <script>
@@ -346,7 +346,7 @@
             "语文园地一": ["文明", "文化", "卡片", "关卡", "叶片", "木片", "合力", "开合"]
         },
         "第二单元": {
-            "课文1 吃水不忘挖井人": ["公共", "一共", "生产", "出产", "党员", "共产党", "太阳", "太平", "阳光", "夕阳", "光明", "目光", "水井", "井口", "主人", "主动", "江水", "江山", "入住", "住口", "东方", "大方", "后来", "先后"],
+            "课文1 吃水不忘挖井人": ["公共", "一共", "生产", "出产", "党员", "共产党", "太阳", "太平", "阳光", "夕阳", "光明", "目光", "水井", "井口", "主人"],
             "课文2 我多想去看看": ["公告", "广告", "好的", "有的", "会合", "开会", "东北", "北方", "东京", "北京", "广东", "广大"],
             "课文3 一个接一个": ["写字", "手写", "认识", "认可", "书写"]
         },
@@ -372,7 +372,7 @@
         "第六单元": {
             "课文10 古诗二首": ["首先", "回首", "水池", "池子", "开采", "采用", "尖刀", "尖叫", "牛角", "羊角", "主角", "早上"],
             "课文11 荷叶圆圆": ["玩乐", "好玩", "眼泪", "眼光", "泪水", "流泪", "它们", "它的", "宝贝", "分贝", "运气", "天气"],
-            "课文12 要下雨了": ["飞机", "手机", "阳台", "台风", "合唱", "欢唱", "雨伞", "打伞", "花朵", "耳朵", "美好", "美人", "这里", "这个", "看见", "好看", "小鱼", "金鱼", "水面", "面包", "学问", "问好", "相加", "加工"],
+            "课文12 要下雨了": ["飞机", "手机", "阳台", "台风", "合唱", "欢唱", "雨伞", "打伞", "花朵", "耳朵", "美好", "美人", "这里", "这个", "看见", "好看"],
             "语文园地六": ["土豆", "毛豆", "北斗星"]
         },
         "第七单元": {
@@ -397,6 +397,7 @@
     let currentRepeat = 0;
     let maxRepeats = 1;
     let timerId = null;
+    let voicesLoaded = false;
 
     // ================= 3. DOM 元素 =================
     const unitSelect = document.getElementById('unitSelect');
@@ -464,21 +465,47 @@
         }
     }
 
-    // 手机浏览器必须用户交互解锁语音
+    // ================= 6. 增强的音频解锁机制 =================
     function unlockAudio() {
-        if (window.speechSynthesis.speaking) return;
-        const msg = new SpeechSynthesisUtterance('');
-        msg.volume = 0;
-        window.speechSynthesis.speak(msg);
+        return new Promise((resolve) => {
+            if (!window.speechSynthesis) {
+                console.warn('浏览器不支持 Web Speech API');
+                resolve(false);
+                return;
+            }
+
+            // 如果语音已在播放，直接返回
+            if (window.speechSynthesis.speaking) {
+                resolve(true);
+                return;
+            }
+
+            // 创建哑音播放来解锁音频
+            const msg = new SpeechSynthesisUtterance('');
+            msg.volume = 0;
+            msg.onend = () => resolve(true);
+            msg.onerror = () => resolve(false);
+
+            try {
+                window.speechSynthesis.speak(msg);
+                // 设置超时以防止无限等待
+                setTimeout(() => resolve(true), 100);
+            } catch (e) {
+                console.warn('音频解锁失败:', e);
+                resolve(false);
+            }
+        });
     }
 
-    startBtn.addEventListener('click', () => {
-        unlockAudio(); // 强制解锁音频
-
+    startBtn.addEventListener('click', async () => {
         if (!unitSelect.value || !lessonSelect.value) {
             alert('请先选择单元和课时哦！🎀');
             return;
         }
+
+        // 解锁音频
+        playStatusEl.textContent = '🎀 正在初始化...';
+        await unlockAudio();
         
         currentWords = chineseData[unitSelect.value][lessonSelect.value];
         currentIndex = 0;
@@ -497,8 +524,8 @@
         updateUI();
     });
 
-    resumeBtn.addEventListener('click', () => {
-        unlockAudio();
+    resumeBtn.addEventListener('click', async () => {
+        await unlockAudio();
         state = 'playing';
         updateUI();
         playNext(); 
@@ -514,7 +541,7 @@
         updateUI();
     });
 
-    // ================= 6. 播放引擎 =================
+    // ================= 7. 播放引擎 =================
     function playNext() {
         if (state !== 'playing') return;
 
@@ -546,8 +573,15 @@
         });
     }
 
-    // ================= 7. 稳定语音播放（修复安卓兼容） =================
+    // ================= 8. 稳定语音播放（Android增强版） =================
     function speak(text, onEnd) {
+        // 安全检查
+        if (!window.speechSynthesis) {
+            console.error('浏览器不支持 Web Speech API');
+            onEnd && onEnd();
+            return;
+        }
+
         window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(text);
@@ -556,21 +590,71 @@
         utterance.pitch = 1;
         utterance.volume = 1;
 
-        // 自动匹配最优中文语音
-        const voices = window.speechSynthesis.getVoices();
-        const zhVoice = voices.find(v => v.lang === 'zh-CN' || v.lang.includes('zh'));
-        if (zhVoice) utterance.voice = zhVoice;
+        // 确保语音列表已加载 - Android 关键修复
+        const loadVoices = () => {
+            const voices = window.speechSynthesis.getVoices();
+            
+            if (voices.length === 0) {
+                // 语音列表未加载，注册回调重试
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+                return false;
+            }
+
+            // 优先匹配中文语音
+            const zhVoice = voices.find(v => 
+                v.lang === 'zh-CN' || 
+                v.lang === 'zh' ||
+                v.lang.startsWith('zh-') ||
+                v.name.includes('Mandarin') ||
+                v.name.includes('Chinese')
+            );
+
+            if (zhVoice) {
+                utterance.voice = zhVoice;
+            }
+
+            window.speechSynthesis.onvoiceschanged = null; // 清除回调
+            return true;
+        };
+
+        if (!loadVoices()) {
+            console.warn('语音列表未就绪，使用默认语言');
+        }
 
         utterance.onend = () => onEnd && onEnd();
-        utterance.onerror = () => onEnd && onEnd();
+        utterance.onerror = (event) => {
+            console.error('语音播放错误:', event.error);
+            onEnd && onEnd();
+        };
+
+        // Android 需要更长的延迟以确保正确初始化
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const delay = isAndroid ? 150 : 50;
 
         setTimeout(() => {
-            window.speechSynthesis.speak(utterance);
-        }, 20);
+            try {
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                console.error('播放异常:', e);
+                onEnd && onEnd();
+            }
+        }, delay);
     }
 
-    // 预加载语音
-    window.speechSynthesis.onvoiceschanged = () => {};
+    // ================= 9. 初始化语音列表 =================
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            voicesLoaded = true;
+        };
+        // 触发语音列表加载
+        setTimeout(() => {
+            try {
+                window.speechSynthesis.getVoices();
+            } catch (e) {
+                console.warn('预加载语音失败:', e);
+            }
+        }, 0);
+    }
 </script>
 
 </body>
