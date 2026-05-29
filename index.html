@@ -397,7 +397,7 @@
     let currentRepeat = 0;
     let maxRepeats = 1;
     let timerId = null;
-    let audio = null;
+    let audioUnlocked = false; // 音频引擎解锁状态
 
     // ================= 3. DOM 元素 =================
     const unitSelect = document.getElementById('unitSelect');
@@ -465,7 +465,19 @@
         }
     }
 
+    // 【核心修复】：在用户点击的瞬间，同步“解锁”手机音频引擎
+    function unlockMobileAudio() {
+        if (audioUnlocked) return;
+        const u = new SpeechSynthesisUtterance(' '); // 播放一个空格/静音
+        u.volume = 0; 
+        window.speechSynthesis.speak(u);
+        audioUnlocked = true;
+    }
+
     startBtn.addEventListener('click', () => {
+        // 必须在 click 事件的同步代码栈中解锁！
+        unlockMobileAudio(); 
+
         if (!unitSelect.value || !lessonSelect.value) {
             alert('请先选择单元和课时哦！🎀');
             return;
@@ -475,12 +487,14 @@
         currentRepeat = 0;
         state = 'playing';
         updateUI();
-        playNext();
+        
+        // 稍微延迟 100ms 让引擎完成解锁初始化
+        setTimeout(playNext, 100); 
     });
 
     pauseBtn.addEventListener('click', () => {
         state = 'paused';
-        if(audio) audio.pause();
+        window.speechSynthesis.cancel(); 
         if (timerId) { clearTimeout(timerId); timerId = null; }
         playStatusEl.textContent = '⏸️ 默写已暂停';
         subStatusEl.textContent = '休息一下吧，点击"继续"恢复 🌸';
@@ -490,13 +504,12 @@
     resumeBtn.addEventListener('click', () => {
         state = 'playing';
         updateUI();
-        if(audio) audio.play();
-        else playNext(); 
+        playNext(); 
     });
 
     stopBtn.addEventListener('click', () => {
         state = 'idle';
-        if(audio) audio.pause();
+        window.speechSynthesis.cancel();
         if (timerId) { clearTimeout(timerId); timerId = null; }
         currentWordEl.textContent = '🐱';
         playStatusEl.textContent = '等待开始 🎀';
@@ -514,7 +527,7 @@
             playStatusEl.textContent = '太棒啦！全部默写完成！';
             subStatusEl.textContent = '凯蒂猫为你点赞！👍🎀';
             updateUI();
-            baiduSpeak("默写完成，真棒");
+            speak("默写完成，真棒");
             return;
         }
 
@@ -523,8 +536,7 @@
         playStatusEl.textContent = `正在播放: ${word} (${currentIndex + 1}/${currentWords.length})`;
         subStatusEl.textContent = `第 ${currentRepeat + 1} / ${maxRepeats} 遍 🌸`;
 
-        // 使用百度真人发音
-        baiduSpeak(word, () => {
+        speak(word, () => {
             if (state !== 'playing') return; 
             currentRepeat++;
             if (currentRepeat < maxRepeats) {
@@ -537,30 +549,49 @@
         });
     }
 
-    // ================= 7. 百度语音合成（真人标准普通话）=================
-    function baiduSpeak(text, callback) {
-        if(audio) {
-            audio.pause();
-            audio = null;
-        }
+    // ================= 7. 移动端高兼容语音合成封装 =================
+    let cachedVoice = null;
+
+    function getStandardVoice() {
+        if (cachedVoice) return cachedVoice;
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices.length) return null;
+
+        // 严格锁定 zh-CN (标准普通话)，排除台湾腔和粤语
+        let best = voices.find(v => /zh-CN/i.test(v.lang) && /Tingting|Xiaoxiao|Yunxi|Meijia/i.test(v.name));
+        if (!best) best = voices.find(v => /zh-CN/i.test(v.lang) && /普通话|Mandarin|Female|女/i.test(v.name));
+        if (!best) best = voices.find(v => v.lang === 'zh-CN');
         
-        const encodedText = encodeURIComponent(text);
-        // 免费公共百度语音接口（语速0.8，标准女声，适合听写）
-        const url = `https://tts.baidu.com/text2audio?lan=zh&ie=UTF-8&spd=4&text=${encodedText}`;
-        
-        audio = new Audio(url);
-        audio.onended = () => {
-            audio = null;
-            if(callback) callback();
-        };
-        audio.onerror = () => {
-            console.log("播放失败，使用浏览器备用发音");
-            const u = new SpeechSynthesisUtterance(text);
-            u.rate = 0.85; u.pitch = 1; u.volume = 1;
-            u.onend = callback;
-            window.speechSynthesis.speak(u);
-        };
-        audio.play();
+        if (best) cachedVoice = best;
+        return best;
+    }
+
+    function speak(text, onEnd) {
+        // 【核心修复】：每次播放前必须 cancel，否则 iOS 连续播放会卡死/失声
+        window.speechSynthesis.cancel(); 
+
+        // 【核心修复】：使用 setTimeout 创造一个新的宏任务，绕过 iOS 的 onend 回调 bug
+        setTimeout(() => {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.64;   
+            utterance.pitch = 0.83;  
+            utterance.volume = 1.3;
+            
+            const voice = getStandardVoice();
+            if (voice) utterance.voice = voice;
+
+            utterance.onend = onEnd;
+            utterance.onerror = onEnd; 
+            
+            window.speechSynthesis.speak(utterance);
+        }, 50); // 50ms 的延迟是修复 iOS 连续发音丢失的关键
+    }
+
+    // 预加载语音库
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = () => { getStandardVoice(); };
     }
 </script>
 
