@@ -398,6 +398,7 @@
     let maxRepeats = 1;
     let timerId = null;
     let voicesLoaded = false;
+    let currentUtterance = null;
 
     // ================= 3. DOM 元素 =================
     const unitSelect = document.getElementById('unitSelect');
@@ -474,25 +475,27 @@
                 return;
             }
 
-            // 如果语音已在播放，直接返回
-            if (window.speechSynthesis.speaking) {
-                resolve(true);
-                return;
-            }
+            // 取消任何当前正在进行的语音
+            window.speechSynthesis.cancel();
 
-            // 创建哑音播放来解锁音频
+            // 创建一个空的哑音来解锁音频
             const msg = new SpeechSynthesisUtterance('');
             msg.volume = 0;
-            msg.onend = () => resolve(true);
-            msg.onerror = () => resolve(false);
+            msg.onend = () => {
+                console.log('音频解锁成功');
+                resolve(true);
+            };
+            msg.onerror = () => {
+                console.log('音频解锁完成（带错误）');
+                resolve(true);
+            };
 
             try {
                 window.speechSynthesis.speak(msg);
-                // 设置超时以防止无限等待
-                setTimeout(() => resolve(true), 100);
+                setTimeout(() => resolve(true), 200);
             } catch (e) {
-                console.warn('音频解锁失败:', e);
-                resolve(false);
+                console.warn('音频解锁异常:', e);
+                resolve(true);
             }
         });
     }
@@ -503,7 +506,6 @@
             return;
         }
 
-        // 解锁音频
         playStatusEl.textContent = '🎀 正在初始化...';
         await unlockAudio();
         
@@ -516,25 +518,34 @@
     });
 
     pauseBtn.addEventListener('click', () => {
+        console.log('暂停按钮被点击');
         state = 'paused';
-        window.speechSynthesis.cancel(); 
-        if (timerId) { clearTimeout(timerId); timerId = null; }
+        window.speechSynthesis.cancel();
+        if (timerId) { 
+            clearTimeout(timerId); 
+            timerId = null; 
+        }
         playStatusEl.textContent = '⏸️ 默写已暂停';
         subStatusEl.textContent = '休息一下吧，点击"继续"恢复 🌸';
         updateUI();
     });
 
     resumeBtn.addEventListener('click', async () => {
+        console.log('继续按钮被点击');
         await unlockAudio();
         state = 'playing';
         updateUI();
-        playNext(); 
+        playNext();
     });
 
     stopBtn.addEventListener('click', () => {
+        console.log('停止按钮被点击');
         state = 'idle';
         window.speechSynthesis.cancel();
-        if (timerId) { clearTimeout(timerId); timerId = null; }
+        if (timerId) { 
+            clearTimeout(timerId); 
+            timerId = null; 
+        }
         currentWordEl.textContent = '🐱';
         playStatusEl.textContent = '等待开始 🎀';
         subStatusEl.textContent = '默写已停止，随时可以重新开始哦！';
@@ -561,27 +572,27 @@
         subStatusEl.textContent = `第 ${currentRepeat + 1} / ${maxRepeats} 遍 🌸`;
 
         speak(word, () => {
-            if (state !== 'playing') return; 
+            if (state !== 'playing') return;
             currentRepeat++;
             if (currentRepeat < maxRepeats) {
                 timerId = setTimeout(playNext, 1000);
             } else {
                 currentRepeat = 0;
                 currentIndex++;
-                timerId = setTimeout(playNext, 3000); 
+                timerId = setTimeout(playNext, 3000);
             }
         });
     }
 
-    // ================= 8. 稳定语音播放（Android增强版） =================
+    // ================= 8. 稳定语音播放（增强版）=================
     function speak(text, onEnd) {
-        // 安全检查
         if (!window.speechSynthesis) {
             console.error('浏览器不支持 Web Speech API');
-            onEnd && onEnd();
+            if (onEnd) onEnd();
             return;
         }
 
+        // 取消之前的语音
         window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(text);
@@ -590,53 +601,52 @@
         utterance.pitch = 1;
         utterance.volume = 1;
 
-        // 确保语音列表已加载 - Android 关键修复
+        currentUtterance = utterance;
+
+        // 加载语音列表
         const loadVoices = () => {
             const voices = window.speechSynthesis.getVoices();
             
-            if (voices.length === 0) {
-                // 语音列表未加载，注册回调重试
-                window.speechSynthesis.onvoiceschanged = loadVoices;
-                return false;
+            if (voices.length > 0) {
+                // 优先查找中文语音
+                const zhVoice = voices.find(v => 
+                    v.lang === 'zh-CN' || 
+                    v.lang === 'zh' ||
+                    v.lang.startsWith('zh-') ||
+                    v.name.includes('Mandarin') ||
+                    v.name.includes('Chinese')
+                );
+
+                if (zhVoice) {
+                    utterance.voice = zhVoice;
+                }
+
+                window.speechSynthesis.onvoiceschanged = null;
             }
-
-            // 优先匹配中文语音
-            const zhVoice = voices.find(v => 
-                v.lang === 'zh-CN' || 
-                v.lang === 'zh' ||
-                v.lang.startsWith('zh-') ||
-                v.name.includes('Mandarin') ||
-                v.name.includes('Chinese')
-            );
-
-            if (zhVoice) {
-                utterance.voice = zhVoice;
-            }
-
-            window.speechSynthesis.onvoiceschanged = null; // 清除回调
-            return true;
         };
 
-        if (!loadVoices()) {
-            console.warn('语音列表未就绪，使用默认语言');
-        }
+        loadVoices();
 
-        utterance.onend = () => onEnd && onEnd();
+        utterance.onend = () => {
+            console.log('播放结束:', text);
+            if (onEnd) onEnd();
+        };
+
         utterance.onerror = (event) => {
-            console.error('语音播放错误:', event.error);
-            onEnd && onEnd();
+            console.warn('语音播放出错:', event.error);
+            if (onEnd) onEnd();
         };
 
-        // Android 需要更长的延迟以确保正确初始化
-        const isAndroid = /Android/i.test(navigator.userAgent);
-        const delay = isAndroid ? 150 : 50;
+        // 延迟播放以确保初始化完成
+        const delay = /Android/i.test(navigator.userAgent) ? 100 : 50;
 
         setTimeout(() => {
             try {
                 window.speechSynthesis.speak(utterance);
+                console.log('开始播放:', text);
             } catch (e) {
                 console.error('播放异常:', e);
-                onEnd && onEnd();
+                if (onEnd) onEnd();
             }
         }, delay);
     }
@@ -645,8 +655,9 @@
     if ('speechSynthesis' in window) {
         window.speechSynthesis.onvoiceschanged = () => {
             voicesLoaded = true;
+            console.log('语音列表已加载');
         };
-        // 触发语音列表加载
+        
         setTimeout(() => {
             try {
                 window.speechSynthesis.getVoices();
@@ -655,6 +666,13 @@
             }
         }, 0);
     }
+
+    // ================= 10. 页面卸载时清理 =================
+    window.addEventListener('beforeunload', () => {
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+    });
 </script>
 
 </body>
