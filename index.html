@@ -1,679 +1,231 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎀 侄女学习助手 🎀</title>
-    <style>
-        /* ================= 凯蒂猫主题样式 ================= */
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Microsoft YaHei', sans-serif;
-            background-color: #fff0f5;
-            background-image: radial-gradient(#ffb6c1 2px, transparent 2px);
-            background-size: 30px 30px;
-            color: #4a4a4a;
-            min-height: 100vh;
-            padding: 15px;
-            line-height: 1.6;
-        }
-
-        .container {
-            background: white;
-            border-radius: 30px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.25);
-            border: 3px solid #ff69b4;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
-            color: white;
-            padding: 25px 15px;
-            text-align: center;
-            position: relative;
-        }
-        .header h1 {
-            font-size: 26px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            margin-bottom: 5px;
-        }
-        .header p { opacity: 0.9; font-size: 14px; }
-        
-        .bow {
-            position: absolute;
-            top: -10px;
-            right: 20px;
-            width: 50px;
-            height: 30px;
-            background: #ff0000;
-            border-radius: 50%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-        .bow::before, .bow::after {
-            content: '';
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: #ff0000;
-            border-radius: 50%;
-            top: -5px;
-        }
-        .bow::before { left: -25px; }
-        .bow::after { right: -25px; }
-        .bow-center {
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 15px;
-            height: 20px;
-            background: #cc0000;
-            border-radius: 5px;
-            z-index: 11;
-        }
-
-        .section { padding: 20px; }
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #ff1493;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            border-bottom: 2px dashed #ffb6c1;
-            padding-bottom: 8px;
-        }
-        
-        .select-box {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ffb6c1;
-            border-radius: 15px;
-            font-size: 16px;
-            background: #fffaf0;
-            color: #000 !important; 
-            font-family: inherit;
-            appearance: none;
-            -webkit-appearance: none; 
-            -moz-appearance: none;
-            position: relative;
-            z-index: 10; 
-            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23ff69b4' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            background-size: 12px;
-        }
-        
-        .content-box {
-            background: #fff0f5;
-            border-radius: 20px;
-            padding: 15px;
-            margin-top: 15px;
-            min-height: 100px;
-            border: 2px dashed #ffb6c1;
-        }
-        .word-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .word-item {
-            background: white;
-            padding: 10px 16px;
-            border-radius: 20px;
-            box-shadow: 0 3px 8px rgba(255, 105, 180, 0.15);
-            font-size: 16px;
-            font-weight: bold;
-            color: #ff1493;
-            border: 1px solid #ffb6c1;
-        }
-        
-        .play-settings {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #fffaf0;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border: 1px solid #ffe4e1;
-        }
-        .setting-label { font-size: 16px; font-weight: bold; color: #ff69b4; min-width: 80px; }
-        .play-count { display: flex; gap: 10px; flex: 1; }
-        .count-btn {
-            flex: 1;
-            padding: 12px;
-            background: white;
-            border: 2px solid #ffb6c1;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #ff69b4;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .count-btn.active {
-            background: #ff69b4;
-            color: white;
-            border-color: #ff1493;
-            transform: scale(1.05);
-            box-shadow: 0 4px 10px rgba(255, 105, 180, 0.4);
-        }
-        
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-        .btn {
-            flex: 1;
-            padding: 16px;
-            border: none;
-            border-radius: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn:active { transform: scale(0.95); }
-        
-        .btn-start {
-            background: linear-gradient(135deg, #ff69b4, #ff1493);
-            color: white;
-            box-shadow: 0 6px 15px rgba(255, 20, 147, 0.4);
-        }
-        .btn-pause {
-            background: linear-gradient(135deg, #ffd700, #ffa500);
-            color: white;
-            box-shadow: 0 6px 15px rgba(255, 165, 0, 0.4);
-        }
-        .btn-resume {
-            background: linear-gradient(135deg, #32cd32, #228b22);
-            color: white;
-            box-shadow: 0 6px 15px rgba(50, 205, 50, 0.4);
-        }
-        .btn-stop {
-            background: linear-gradient(135deg, #ff7f50, #ff6347);
-            color: white;
-            box-shadow: 0 6px 15px rgba(255, 99, 71, 0.4);
-        }
-        
-        .current-play {
-            background: linear-gradient(135deg, #fff0f5, #ffe4e1);
-            border-radius: 25px;
-            padding: 25px 15px;
-            margin-top: 25px;
-            text-align: center;
-            border: 3px solid #ffb6c1;
-            position: relative;
-            overflow: hidden;
-        }
-        .current-play::before {
-            content: '🌸';
-            position: absolute;
-            top: 10px;
-            left: 15px;
-            font-size: 24px;
-            opacity: 0.5;
-        }
-        .current-play::after {
-            content: '🌸';
-            position: absolute;
-            bottom: 10px;
-            right: 15px;
-            font-size: 24px;
-            opacity: 0.5;
-        }
-        .current-word {
-            font-size: 48px;
-            font-weight: bold;
-            color: #ff1493;
-            margin: 15px 0;
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.2);
-        }
-        .play-status {
-            font-size: 15px;
-            color: #ff69b4;
-            font-weight: bold;
-        }
-        
-        .info {
-            background: white;
-            border-radius: 20px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #888;
-            border: 2px dashed #ffb6c1;
-        }
-        .info h3 { color: #ff1493; margin-bottom: 8px; font-size: 15px; }
-        
-        .hidden { display: none !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="喵喵听写">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>喵喵听写</title>
 </head>
 <body>
 
-<div class="container">
-    <div class="bow"><div class="bow-center"></div></div>
-    
-    <div class="header">
-        <h1>🎀 小猫默写助手 🐱</h1>
-        <p>人教版一年级下册 | 真人标准普通话</p>
-    </div>
-    
-    <div class="section">
-        <div class="section-title">🌸 选择单元</div>
-        <select id="unitSelect" class="select-box">
-            <option value="">请选择单元</option>
-        </select>
-    </div>
-    
-    <div class="section">
-        <div class="section-title">📚 选择课时</div>
-        <select id="lessonSelect" class="select-box" disabled>
-            <option value="">请选择课时</option>
-        </select>
-        
-        <div class="content-box">
-            <div class="section-title" style="border:none; padding:0; margin-bottom:10px;">✨ 课时内容</div>
-            <div id="wordContent" class="word-list">
-                <div class="word-item">请先选择单元和课时哦~</div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="section">
-        <div class="section-title">🔊 播放设置</div>
-        
-        <div class="play-settings">
-            <span class="setting-label">播放次数</span>
-            <div class="play-count">
-                <button class="count-btn active" data-count="1">1次</button>
-                <button class="count-btn" data-count="2">2次</button>
-                <button class="count-btn" data-count="3">3次</button>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <button class="btn btn-start" id="startBtn">🎀 开始默写</button>
-            <button class="btn btn-pause hidden" id="pauseBtn">⏸️ 暂停</button>
-            <button class="btn btn-resume hidden" id="resumeBtn">▶️ 继续</button>
-            <button class="btn btn-stop hidden" id="stopBtn">⏹️ 停止</button>
-        </div>
-        
-        <div class="current-play">
-            <div class="play-status" id="playStatus">等待开始 🎀</div>
-            <div class="current-word" id="currentWord">🐱</div>
-            <div class="play-status" id="subStatus">选择单元和课时后点击"开始默写"</div>
-        </div>
-    </div>
+<!-- 背景装饰 -->
+<div class="bg-decor cloud1">☁️</div>
+<div class="bg-decor cloud2">☁️</div>
+<div class="bg-decor cloud3">☁️</div>
+<div class="bg-decor cloud4">☁️</div>
+<div class="bg-decor star1">✨</div>
+<div class="bg-decor star2">✨</div>
+<div class="bg-decor star3">✨</div>
+
+<!-- 顶栏 -->
+<header class="app-bar" id="appBar">
+  <div class="cat-avatar">🐱</div>
+  <div class="title-wrap">
+    <h1>喵喵听写</h1>
+    <div class="subtitle" id="appBarSub">小学语文听写练习</div>
+  </div>
+  <span class="level-badge" id="levelBadge">🌟 Lv.1</span>
+</header>
+
+<!-- 底部导航 -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-item active" data-page="dictate">
+    <span class="nav-icon">📖</span><span>听写</span>
+  </button>
+  <button class="nav-item" data-page="library">
+    <span class="nav-icon">📚</span><span>词库</span>
+  </button>
+  <button class="nav-item" data-page="custom">
+    <span class="nav-icon">✏️</span><span>自定义</span>
+  </button>
+  <button class="nav-item" data-page="errors">
+    <span class="icon-wrap">
+      <span class="nav-icon">📝</span><span class="dot" id="errorDot"></span>
+    </span><span>错词本</span>
+  </button>
+</nav>
+
+<!-- 安装横幅 -->
+<div class="install-banner" id="installBanner">
+  <span class="msg">📱 将「喵喵听写」添加到主屏幕，像App一样使用！</span>
+  <button class="close-btn" id="installClose">✕</button>
 </div>
 
-<div class="info">
-    <h3>🎀 凯蒂猫使用说明 🎀</h3>
-    <p>1. 选择单元和课时，设置每个词读几遍（最多3遍）。</p>
-    <p>2. 点击 🎀 开始默写，使用**标准普通话**朗读。</p>
-    <p>3. 默写过程中可以随时点击 ⏸️ 暂停，休息好了再点 ▶️ 继续。</p>
-    <p>4. 如果不想写了，点击 ⏹️ 停止 即可重新开始。</p>
-    <p style="color:#ff1493; margin-top:5px;">💖 发音：清晰标准普通话，已优化安卓兼容性！</p>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 撒花容器 -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<!-- 成就弹窗 -->
+<div class="achieve-popup" id="achievePopup">
+  <span class="ach-icon" id="achIcon">🏆</span>
+  <div class="ach-title" id="achTitle"></div>
+  <div class="ach-desc" id="achDesc"></div>
 </div>
 
-<script>
-    // ================= 1. 数据源 =================
-    const chineseData = {
-        "第一单元": {
-            "识字1 春夏秋冬": ["春天", "春雨", "冬天", "冬日", "吹风", "吹气", "花生", "开花", "飞鸟", "飞天", "入口", "出入"],
-            "识字2 姓氏歌": ["什么", "为什么", "多么", "好么", "古人", "古今", "二胡", "胡子", "双手", "双人", "方言", "名言"],
-            "识字3 小青蛙": ["青春", "青山", "清水", "清白", "晴天", "天晴", "禾苗", "火苗", "请问", "请人", "人生", "花生"],
-            "识字4 猜字谜": ["生字", "文字", "火红", "红花", "动人", "生动", "万里", "万一", "无用", "有无", "明月", "明白"],
-            "语文园地一": ["文明", "文化", "卡片", "关卡", "叶片", "木片", "合力", "开合"]
-        },
-        "第二单元": {
-            "课文1 吃水不忘挖井人": ["公共", "一共", "生产", "出产", "党员", "共产党", "太阳", "太平", "阳光", "夕阳", "光明", "目光", "水井", "井口", "主人"],
-            "课文2 我多想去看看": ["公告", "广告", "好的", "有的", "会合", "开会", "东北", "北方", "东京", "北京", "广东", "广大"],
-            "课文3 一个接一个": ["写字", "手写", "认识", "认可", "书写"]
-        },
-        "第三单元": {
-            "课文4 小公鸡和小鸭子": ["出走", "走动", "河水", "江河", "小说", "说明", "让开", "出让", "自主", "自立", "自己", "主见"],
-            "课文5 树和喜鹊": ["从小", "自从", "和好", "好人", "你们", "人们", "叫声", "大叫", "其他", "他们", "回来", "回去"],
-            "课文6 怎么都快乐": ["快乐", "快点", "可乐", "欢乐", "当天", "当时", "书本", "书写", "画画", "书画", "毛竹", "毛笔"],
-            "语文园地三": ["不止", "中止", "半斤", "一斤", "尺寸", "寸头", "人丁", "园丁", "秋千", "千万", "元旦", "公园"]
-        },
-        "第四单元": {
-            "课文7 静夜思": ["心思", "三思", "木床", "大床", "前后", "前天", "土地", "地下", "故人", "故乡", "乡下", "同乡"],
-            "课文8 夜色": ["红色", "白色", "把手", "火把", "讲话", "听讲", "样子", "一样", "大笑", "可笑", "再见", "再会"],
-            "课文9 端午粽": ["节日", "春节", "大米", "玉米", "人间", "中间", "分开", "分心", "吃力", "小吃", "羊肉", "肉体"],
-            "语文园地四": ["画册", "手册", "支出", "开支", "电力", "电工", "风衣", "上衣"]
-        },
-        "第五单元": {
-            "识字5 动物儿歌": ["动物", "物体", "造字", "造句", "运用", "运动", "欢笑", "欢乐", "房间", "书房", "上网", "鱼网"],
-            "识字6 古对今": ["对手", "对比", "今后", "今天", "雪山", "白雪", "细心", "仔细", "夕阳", "七夕", "语言", "口语"],
-            "识字7 操场上": ["打造", "打开", "皮衣", "皮毛", "跑车", "长跑", "手足", "立足", "沙子", "沙包", "包子", "书包"],
-            "识字8 人之初": ["远近", "近日", "学习", "自习", "远大", "长远", "学生", "同学", "玉石", "玉米", "正义", "义气"],
-            "语文园地五": ["饱和", "吃饱", "怀抱", "抱头", "青山", "青草", "不在", "再见", "再次"]
-        },
-        "第六单元": {
-            "课文10 古诗二首": ["首先", "回首", "水池", "池子", "开采", "采用", "尖刀", "尖叫", "牛角", "羊角", "主角", "早上"],
-            "课文11 荷叶圆圆": ["玩乐", "好玩", "眼泪", "眼光", "泪水", "流泪", "它们", "它的", "宝贝", "分贝", "运气", "天气"],
-            "课文12 要下雨了": ["飞机", "手机", "阳台", "台风", "合唱", "欢唱", "雨伞", "打伞", "花朵", "耳朵", "美好", "美人", "这里", "这个", "看见", "好看"],
-            "语文园地六": ["土豆", "毛豆", "北斗星"]
-        },
-        "第七单元": {
-            "课文14 文具的家": ["笔画", "毛笔", "知道", "知己", "大道", "公道", "放学", "放心", "公平", "水平", "安全", "平安"],
-            "课文15 一分钟": ["台灯", "灯光", "火车", "风车", "站立", "站台", "课本", "课文", "坐下", "坐车", "老年", "老人", "老师", "大师"],
-            "课文16 动物王国开大会": ["国王", "中国", "全都", "都是", "百万", "听见", "听说", "时间", "小时", "点心", "竹林", "树林"],
-            "课文17 小猴子下山": ["高中", "高兴", "尽情", "走着", "看着", "往日", "来往", "西瓜", "冬瓜", "兔子", "进入", "进去"],
-            "语文园地七": ["头巾", "毛巾", "清洗", "洗手"]
-        },
-        "第八单元": {
-            "课文18 棉花姑娘": ["她们", "她的", "天空", "半空", "还有", "还好", "才干", "干活", "身后", "身体", "星星", "星光", "不久", "长久"],
-            "课文19 咕咚": ["吓人", "因为", "为什么", "可怕", "不怕", "家人", "家里", "大象", "象牙", "没有", "没用", "回到"],
-            "课文20 小壁虎借尾巴": ["方向", "向上", "天边", "右边", "行人", "行走", "青草", "小草", "赶快", "赶忙", "过去", "过河", "找到", "寻找"],
-            "语文园地八": ["几页", "门户", "户口", "上交", "父子"]
-        }
-    };
+<!-- ==================== 听写页 ==================== -->
+<div id="page-dictate" class="page active">
 
-    // ================= 2. 状态管理 =================
-    let state = 'idle'; 
-    let currentWords = [];
-    let currentIndex = 0;
-    let currentRepeat = 0;
-    let maxRepeats = 1;
-    let timerId = null;
-    let voicesLoaded = false;
-    let currentUtterance = null;
+  <div class="streak-bar" id="streakBar">
+    <span class="streak-fire">🔥</span>
+    <span class="streak-info">连续打卡</span>
+    <span class="streak-days" id="streakDays">0</span>
+    <span class="streak-info">天</span>
+    <span style="font-size:11px;color:var(--txt3);margin-left:auto" id="streakToday"></span>
+  </div>
 
-    // ================= 3. DOM 元素 =================
-    const unitSelect = document.getElementById('unitSelect');
-    const lessonSelect = document.getElementById('lessonSelect');
-    const wordContent = document.getElementById('wordContent');
-    const startBtn = document.getElementById('startBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const resumeBtn = document.getElementById('resumeBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const currentWordEl = document.getElementById('currentWord');
-    const playStatusEl = document.getElementById('playStatus');
-    const subStatusEl = document.getElementById('subStatus');
-    const countBtns = document.querySelectorAll('.count-btn');
+  <!-- 设置区 -->
+  <div id="dictateSetup">
+    <div class="card">
+      <div class="card-title">🐱 选择年级</div>
+      <div class="grade-grid" id="gradeGrid"></div>
+    </div>
+    <div class="card" id="lessonCard">
+      <div class="card-title">📖 选择课程</div>
+      <div class="lesson-grid" id="lessonGrid"></div>
+    </div>
+    <div class="card" id="previewCard">
+      <div class="card-title flex-between">
+        <span>📝 本课生词</span>
+        <span class="text-note text-note-light" id="wordCount">0个词</span>
+      </div>
+      <div class="word-tags" id="wordPreview"></div>
+      <button class="btn btn-primary btn-block btn-lg mt-8" id="startBtn">🎧 开始听写</button>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ 听写设置</div>
+      <div class="setting-row"><span>🔁 朗读次数</span>
+        <select id="repeatCount"><option value="1">1次</option><option value="2" selected>2次</option><option value="3">3次</option></select></div>
+      <div class="setting-row"><span>🔀 随机顺序</span>
+        <select id="shuffleMode"><option value="0">按顺序</option><option value="1">随机打乱</option></select></div>
+      <div class="setting-row"><span>📢 朗读拼音</span>
+        <select id="readPinyin"><option value="0">否</option><option value="1">是</option></select></div>
+    </div>
+  </div>
 
-    // ================= 4. 初始化界面 =================
-    Object.keys(chineseData).forEach(unit => {
-        unitSelect.appendChild(new Option(unit, unit));
-    });
+  <!-- 听写进行中 -->
+  <div id="dictateProgress" class="card hidden">
+    <div class="cat-mascot thinking" id="mascotProgress">🐱</div>
+    <div class="dictate-area">
+      <div class="progress-info">
+        <span id="progText">第1/10个</span>
+        <span id="scoreText">✅ 0 | ❌ 0</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+      <div class="word-big" id="wordDisplay">?</div>
+      <div class="word-pinyin" id="wordPinyin"></div>
+      <div class="speaker-wrap">
+        <button class="speaker-btn" id="speakerBtn">🔊<div class="sound-waves"></div></button>
+      </div>
+      <div class="dictate-actions">
+        <button class="btn btn-success btn-block btn-lg" id="showAnsBtn">👀 显示答案</button>
+        <div class="btn-group full-width hidden" id="markBtns">
+          <button class="btn btn-success btn-lg" id="correctBtn">✅ 写对了</button>
+          <button class="btn btn-danger btn-lg" id="wrongBtn">❌ 写错了</button>
+        </div>
+        <div class="sub-actions">
+          <button class="btn btn-info btn-sm" id="repeatBtn">🔊 再读一遍</button>
+          <button class="btn btn-outline btn-sm" id="skipBtn">⏭️ 跳过</button>
+          <button class="btn btn-outline btn-sm" id="endEarlyBtn">结束</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    unitSelect.addEventListener('change', function() {
-        lessonSelect.innerHTML = '<option value="">请选择课时</option>';
-        wordContent.innerHTML = '<div class="word-item">请先选择课时哦~</div>';
-        lessonSelect.disabled = !this.value;
-        if (this.value) {
-            Object.keys(chineseData[this.value]).forEach(lesson => {
-                lessonSelect.appendChild(new Option(lesson, lesson));
-            });
-        }
-    });
+  <!-- 结果 -->
+  <div id="dictateResult" class="card hidden">
+    <div class="cat-mascot" id="mascotResult">🐱</div>
+    <div class="card-title justify-center">🏆 听写完成！</div>
+    <div class="stars-row" id="starsRow"></div>
+    <div class="score-display great" id="scoreDisplay">100分</div>
+    <div class="result-stat">正确 <span id="resCorrect">0</span> 个 · 错误 <span id="resWrong">0</span> 个 · 共 <span id="resTotal">0</span> 个</div>
+    <div class="result-stat" id="xpGain" style="color:var(--c5);font-weight:700"></div>
+    <div class="result-list" id="resultList"></div>
+    <div class="btn-group mt-12">
+      <button class="btn btn-primary" id="retryBtn">🔄 再听一次</button>
+      <button class="btn btn-warning hidden" id="reviewErrorBtn">📝 复习错词</button>
+      <button class="btn btn-outline" id="backHomeBtn">🏠 首页</button>
+    </div>
+  </div>
+</div>
 
-    lessonSelect.addEventListener('change', function() {
-        if (this.value) {
-            const words = chineseData[unitSelect.value][this.value];
-            wordContent.innerHTML = '';
-            words.forEach(w => {
-                const div = document.createElement('div');
-                div.className = 'word-item';
-                div.textContent = w;
-                wordContent.appendChild(div);
-            });
-            subStatusEl.textContent = `准备好啦！点击"开始默写" 🎀`;
-        }
-    });
+<!-- ==================== 词库页 ==================== -->
+<div id="page-library" class="page">
+  <div class="card">
+    <div class="card-title">📚 词库管理</div>
+    <div class="tab-selector">
+      <select id="libGrade"></select>
+      <select id="libLesson"></select>
+      <button class="btn btn-success btn-sm" id="addWordBtn">➕ 添加</button>
+    </div>
+    <div class="word-mgr-list" id="libWordList"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📥 批量导入</div>
+    <div class="batch-area">
+      <textarea id="batchInput" placeholder="每行一个词：汉字 拼音&#10;春天 chūn tiān&#10;花朵 huā duǒ"></textarea>
+      <div class="hint">每行一个词，汉字和拼音用空格隔开</div>
+      <button class="btn btn-info btn-sm mt-6 full-width" id="batchBtn">📥 导入到当前课程</button>
+    </div>
+  </div>
+</div>
 
-    countBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            countBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            maxRepeats = parseInt(this.dataset.count);
-        });
-    });
+<!-- ==================== 自定义听写页 ==================== -->
+<div id="page-custom" class="page">
+  <div class="card">
+    <div class="card-title">✏️ 自定义听写</div>
+    <p class="text-muted">想听什么就写什么！输入你想练习的字词，自由听写 ✨</p>
+    <textarea id="customInput" placeholder="每行一个词：汉字 拼音&#10;例如：&#10;你好 nǐ hǎo&#10;世界 shì jiè&#10;快乐 kuài lè&#10;&#10;也可以只写汉字（拼音留空）：&#10;朋友&#10;学习" class="custom-textarea"></textarea>
+    <div class="button-row">
+      <button class="btn btn-info btn-sm flex-1" id="customParseBtn">📋 从剪贴板导入</button>
+      <button class="btn btn-warning btn-sm" id="customClearBtn">🗑️ 清空</button>
+    </div>
+    <div class="text-note mb-10"><span id="customWordCount">已输入 0 个词</span></div>
+    <button class="btn btn-primary btn-block btn-lg" id="customStartBtn">🎧 开始听写自定义词</button>
+  </div>
+  <div class="card">
+    <div class="card-title flex-between"><span>💾 保存的词列表</span><span class="text-note text-note-light" id="savedListCount">0个</span></div>
+    <div id="customSavedLists"></div>
+  </div>
+</div>
 
-    // ================= 5. 核心控制逻辑 =================
-    function updateUI() {
-        startBtn.classList.toggle('hidden', state !== 'idle' && state !== 'finished');
-        pauseBtn.classList.toggle('hidden', state !== 'playing');
-        resumeBtn.classList.toggle('hidden', state !== 'paused');
-        stopBtn.classList.toggle('hidden', state !== 'playing' && state !== 'paused');
-        
-        if (state === 'finished') {
-            startBtn.innerHTML = '🔄 重新开始';
-            startBtn.classList.remove('hidden');
-        } else {
-            startBtn.innerHTML = '🎀 开始默写';
-        }
-    }
+<!-- ==================== 错词本页 ==================== -->
+<div id="page-errors" class="page">
+  <div class="card">
+    <div class="card-title">📝 错词本 <span class="text-note text-note-light" id="errCount">(0个)</span></div>
+    <div id="errorList"></div>
+    <div class="btn-group mt-12">
+      <button class="btn btn-primary" id="reviewErrBtn">📝 复习错词</button>
+      <button class="btn btn-outline btn-sm" id="clearErrBtn">🗑️ 清空</button>
+    </div>
+  </div>
+</div>
 
-    // ================= 6. 增强的音频解锁机制 =================
-    function unlockAudio() {
-        return new Promise((resolve) => {
-            if (!window.speechSynthesis) {
-                console.warn('浏览器不支持 Web Speech API');
-                resolve(false);
-                return;
-            }
+<!-- 弹窗 -->
+<div class="modal-overlay" id="wordModal">
+  <div class="modal-sheet">
+    <h3 id="modalTitle">✏️ 添加生词</h3>
+    <input type="text" id="modalWord" placeholder="汉字（如：春天）" autocomplete="off">
+    <input type="text" id="modalPinyin" placeholder="拼音（如：chūn tiān）" autocomplete="off">
+    <input type="hidden" id="modalEditIdx" value="-1">
+    <div class="modal-acts">
+      <button class="btn btn-outline btn-sm" id="modalCancel">取消</button>
+      <button class="btn btn-primary btn-sm" id="modalConfirm">✅ 确定</button>
+    </div>
+  </div>
+</div>
 
-            // 取消任何当前正在进行的语音
-            window.speechSynthesis.cancel();
-
-            // 创建一个空的哑音来解锁音频
-            const msg = new SpeechSynthesisUtterance('');
-            msg.volume = 0;
-            msg.onend = () => {
-                console.log('音频解锁成功');
-                resolve(true);
-            };
-            msg.onerror = () => {
-                console.log('音频解锁完成（带错误）');
-                resolve(true);
-            };
-
-            try {
-                window.speechSynthesis.speak(msg);
-                setTimeout(() => resolve(true), 200);
-            } catch (e) {
-                console.warn('音频解锁异常:', e);
-                resolve(true);
-            }
-        });
-    }
-
-    startBtn.addEventListener('click', async () => {
-        if (!unitSelect.value || !lessonSelect.value) {
-            alert('请先选择单元和课时哦！🎀');
-            return;
-        }
-
-        playStatusEl.textContent = '🎀 正在初始化...';
-        await unlockAudio();
-        
-        currentWords = chineseData[unitSelect.value][lessonSelect.value];
-        currentIndex = 0;
-        currentRepeat = 0;
-        state = 'playing';
-        updateUI();
-        playNext();
-    });
-
-    pauseBtn.addEventListener('click', () => {
-        console.log('暂停按钮被点击');
-        state = 'paused';
-        window.speechSynthesis.cancel();
-        if (timerId) { 
-            clearTimeout(timerId); 
-            timerId = null; 
-        }
-        playStatusEl.textContent = '⏸️ 默写已暂停';
-        subStatusEl.textContent = '休息一下吧，点击"继续"恢复 🌸';
-        updateUI();
-    });
-
-    resumeBtn.addEventListener('click', async () => {
-        console.log('继续按钮被点击');
-        await unlockAudio();
-        state = 'playing';
-        updateUI();
-        playNext();
-    });
-
-    stopBtn.addEventListener('click', () => {
-        console.log('停止按钮被点击');
-        state = 'idle';
-        window.speechSynthesis.cancel();
-        if (timerId) { 
-            clearTimeout(timerId); 
-            timerId = null; 
-        }
-        currentWordEl.textContent = '🐱';
-        playStatusEl.textContent = '等待开始 🎀';
-        subStatusEl.textContent = '默写已停止，随时可以重新开始哦！';
-        updateUI();
-    });
-
-    // ================= 7. 播放引擎 =================
-    function playNext() {
-        if (state !== 'playing') return;
-
-        if (currentIndex >= currentWords.length) {
-            state = 'finished';
-            currentWordEl.textContent = '🎉 完成！';
-            playStatusEl.textContent = '太棒啦！全部默写完成！';
-            subStatusEl.textContent = '凯蒂猫为你点赞！👍🎀';
-            updateUI();
-            speak("默写完成，真棒");
-            return;
-        }
-
-        const word = currentWords[currentIndex];
-        currentWordEl.textContent = word;
-        playStatusEl.textContent = `正在播放: ${word} (${currentIndex + 1}/${currentWords.length})`;
-        subStatusEl.textContent = `第 ${currentRepeat + 1} / ${maxRepeats} 遍 🌸`;
-
-        speak(word, () => {
-            if (state !== 'playing') return;
-            currentRepeat++;
-            if (currentRepeat < maxRepeats) {
-                timerId = setTimeout(playNext, 1000);
-            } else {
-                currentRepeat = 0;
-                currentIndex++;
-                timerId = setTimeout(playNext, 3000);
-            }
-        });
-    }
-
-    // ================= 8. 稳定语音播放（增强版）=================
-    function speak(text, onEnd) {
-        if (!window.speechSynthesis) {
-            console.error('浏览器不支持 Web Speech API');
-            if (onEnd) onEnd();
-            return;
-        }
-
-        // 取消之前的语音
-        window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'zh-CN';
-        utterance.rate = 0.85;
-        utterance.pitch = 1;
-        utterance.volume = 1;
-
-        currentUtterance = utterance;
-
-        // 加载语音列表
-        const loadVoices = () => {
-            const voices = window.speechSynthesis.getVoices();
-            
-            if (voices.length > 0) {
-                // 优先查找中文语音
-                const zhVoice = voices.find(v => 
-                    v.lang === 'zh-CN' || 
-                    v.lang === 'zh' ||
-                    v.lang.startsWith('zh-') ||
-                    v.name.includes('Mandarin') ||
-                    v.name.includes('Chinese')
-                );
-
-                if (zhVoice) {
-                    utterance.voice = zhVoice;
-                }
-
-                window.speechSynthesis.onvoiceschanged = null;
-            }
-        };
-
-        loadVoices();
-
-        utterance.onend = () => {
-            console.log('播放结束:', text);
-            if (onEnd) onEnd();
-        };
-
-        utterance.onerror = (event) => {
-            console.warn('语音播放出错:', event.error);
-            if (onEnd) onEnd();
-        };
-
-        // 延迟播放以确保初始化完成
-        const delay = /Android/i.test(navigator.userAgent) ? 100 : 50;
-
-        setTimeout(() => {
-            try {
-                window.speechSynthesis.speak(utterance);
-                console.log('开始播放:', text);
-            } catch (e) {
-                console.error('播放异常:', e);
-                if (onEnd) onEnd();
-            }
-        }, delay);
-    }
-
-    // ================= 9. 初始化语音列表 =================
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = () => {
-            voicesLoaded = true;
-            console.log('语音列表已加载');
-        };
-        
-        setTimeout(() => {
-            try {
-                window.speechSynthesis.getVoices();
-            } catch (e) {
-                console.warn('预加载语音失败:', e);
-            }
-        }, 0);
-    }
-
-    // ================= 10. 页面卸载时清理 =================
-    window.addEventListener('beforeunload', () => {
-        if (window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-        }
-    });
-</script>
+<!-- JS 模块 -->
+<script src="js/words.js"></script>
+<script src="js/game.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/app.js"></script>
 
 </body>
 </html>
