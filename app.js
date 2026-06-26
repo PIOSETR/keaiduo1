@@ -136,16 +136,37 @@ function showWord() {
   if (store.dictIdx >= store.dictWords.length) { finish(); return; }
   const w = store.dictWords[store.dictIdx];
   const t = store.dictWords.length; const i = store.dictIdx + 1;
+  const isTypeMode = document.getElementById('dictMode').value === 'type';
   document.getElementById('progText').textContent = `第${i}/${t}个`;
   document.getElementById('progFill').style.width = `${(i) / t * 100}%`;
   document.getElementById('scoreText').textContent = `✅ ${store.correct} | ❌ ${store.wrong}`;
   document.getElementById('wordDisplay').textContent = '?';
   document.getElementById('wordDisplay').style.color = 'var(--txt)';
   document.getElementById('wordPinyin').textContent = '';
-  document.getElementById('showAnsBtn').style.display = '';
-  document.getElementById('showAnsBtn').classList.remove('hidden');
-  document.getElementById('markBtns').style.display = 'none';
-  document.getElementById('markBtns').classList.add('hidden');
+
+  if (isTypeMode) {
+    // 打字模式：隐藏自检按钮，显示输入框
+    document.getElementById('showAnsBtn').style.display = 'none';
+    document.getElementById('showAnsBtn').classList.add('hidden');
+    document.getElementById('markBtns').style.display = 'none';
+    document.getElementById('markBtns').classList.add('hidden');
+    const tw = document.getElementById('typeInputWrap');
+    tw.classList.remove('hidden');
+    const inp = document.getElementById('typeInput');
+    inp.value = '';
+    inp.className = 'type-input';
+    document.getElementById('typeFeedback').textContent = '';
+    document.getElementById('typeFeedback').className = 'type-feedback';
+    document.getElementById('typeSubmitBtn').style.display = '';
+    setTimeout(() => inp.focus(), 400);
+  } else {
+    // 自检模式：隐藏输入框，显示自检按钮
+    document.getElementById('typeInputWrap').classList.add('hidden');
+    document.getElementById('showAnsBtn').style.display = '';
+    document.getElementById('showAnsBtn').classList.remove('hidden');
+    document.getElementById('markBtns').style.display = 'none';
+    document.getElementById('markBtns').classList.add('hidden');
+  }
   readWord();
 }
 
@@ -208,8 +229,69 @@ document.getElementById('wrongBtn').addEventListener('click', () => {
 document.getElementById('skipBtn').addEventListener('click', () => {
   const w = store.dictWords[store.dictIdx];
   store.results.push([w, false]); addErr(w);
+  // 如果打字模式，显示答案
+  if (document.getElementById('dictMode').value === 'type') {
+    document.getElementById('wordDisplay').textContent = w[0];
+    document.getElementById('wordDisplay').style.color = 'var(--txt3)';
+    document.getElementById('wordPinyin').textContent = w[1] || '';
+    document.getElementById('typeInputWrap').classList.add('hidden');
+    const fb = document.getElementById('typeFeedback');
+    fb.textContent = '⏭️ 已跳过';
+    fb.className = 'type-feedback';
+    fb.style.display = 'block';
+    setTimeout(() => { fb.style.display = ''; next(); }, 800);
+    return;
+  }
   next();
 });
+
+/* ---------- 打字模式 ---------- */
+document.getElementById('typeSubmitBtn').addEventListener('click', checkTypeAnswer);
+document.getElementById('typeInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); checkTypeAnswer(); }
+});
+
+function checkTypeAnswer() {
+  const inp = document.getElementById('typeInput');
+  const userAnswer = inp.value.trim();
+  if (!userAnswer) { toast('请输入你听到的字词'); inp.focus(); return; }
+  const w = store.dictWords[store.dictIdx];
+  const correctAnswer = w[0];
+  const isCorrect = userAnswer === correctAnswer;
+
+  // 显示答案
+  document.getElementById('wordDisplay').textContent = correctAnswer;
+  document.getElementById('wordDisplay').style.color = isCorrect ? 'var(--c7)' : 'var(--c3)';
+  document.getElementById('wordPinyin').textContent = w[1] || '';
+  document.getElementById('typeSubmitBtn').style.display = 'none';
+
+  const fb = document.getElementById('typeFeedback');
+  if (isCorrect) {
+    inp.className = 'type-input correct';
+    fb.textContent = '✅ 太棒了！回答正确！';
+    fb.className = 'type-feedback correct';
+    store.correct++;
+    store.results.push([w, true]);
+    sfxCorrect();
+    const mascot = document.getElementById('mascotProgress');
+    mascot.className = 'cat-mascot happy';
+    setTimeout(() => mascot.className = 'cat-mascot thinking', 500);
+    document.getElementById('scoreText').textContent = `✅ ${store.correct} | ❌ ${store.wrong}`;
+  } else {
+    inp.className = 'type-input wrong';
+    fb.innerHTML = `❌ 正确答案是：<b>${correctAnswer}</b>（你写的是：${userAnswer}）`;
+    fb.className = 'type-feedback wrong';
+    store.wrong++;
+    store.results.push([w, false]);
+    addErr(w);
+    sfxWrong();
+    const mascot = document.getElementById('mascotProgress');
+    mascot.className = 'cat-mascot sad';
+    setTimeout(() => mascot.className = 'cat-mascot thinking', 500);
+    document.getElementById('scoreText').textContent = `✅ ${store.correct} | ❌ ${store.wrong}`;
+  }
+  setTimeout(next, 1200);
+}
 
 document.getElementById('endEarlyBtn').addEventListener('click', () => {
   if (confirm('确定结束听写吗？')) finish();
@@ -231,6 +313,12 @@ function finish() {
   const t = store.dictWords.length; const c = store.correct;
   const s = t > 0 ? Math.round(c / t * 100) : 0;
   document.getElementById('dictateProgress').style.display = 'none';
+  // 重置打字模式 UI
+  document.getElementById('typeInputWrap').classList.add('hidden');
+  document.getElementById('typeInput').value = '';
+  document.getElementById('typeInput').className = 'type-input';
+  document.getElementById('typeFeedback').textContent = '';
+  document.getElementById('typeFeedback').className = 'type-feedback';
   document.getElementById('dictateResult').style.display = 'block';
   document.getElementById('dictateResult').classList.remove('hidden');
 
@@ -561,6 +649,11 @@ function deleteCustomList(i) {
    =========================================================== */
 document.addEventListener('keydown', e => {
   if (document.getElementById('dictateProgress').style.display === 'block') {
+    const isTypeMode = document.getElementById('dictMode').value === 'type';
+    if (isTypeMode) {
+      if (e.key === 'r' || e.key === 'R') { e.preventDefault(); document.getElementById('repeatBtn').click(); }
+      return; // 打字模式下 Enter 由 input 处理
+    }
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       const sb = document.getElementById('showAnsBtn');

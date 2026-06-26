@@ -345,4 +345,30 @@ body{
   .word-big{font-size:48px;min-height:58px}
   .score-display{font-size:44px}
   .grade-card .num{font-size:24px}
+  .type-input{font-size:18px;padding:12px 14px;max-width:260px}
+  .grade-grid{grid-template-columns:repeat(2,1fr)}
+  .lesson-grid{grid-template-columns:repeat(2,1fr)}
 }
+@media(max-width:360px){
+  .grade-grid{grid-template-columns:repeat(2,1fr)}
+  .lesson-grid{grid-template-columns:repeat(2,1fr)}
+  .word-big{font-size:40px;min-height:50px}
+  .type-input{font-size:16px;max-width:220px}
+}
+
+/* ---------- Type Input Mode ---------- */
+.type-input-wrap{display:flex;flex-direction:column;gap:8px;margin:8px 0;align-items:center}
+.type-input-wrap.show{display:flex}
+.type-input{
+  width:100%;max-width:320px;padding:14px 18px;border:3px solid var(--c5);border-radius:20px;
+  font-size:22px;text-align:center;font-weight:700;outline:none;font-family:var(--font);
+  background:#fffdf7;color:var(--txt);transition:border-color .2s;letter-spacing:4px;
+}
+.type-input:focus{border-color:var(--c1);box-shadow:0 0 0 4px rgba(255,107,107,.15)}
+.type-input.correct{border-color:var(--c7);background:#ecfdf5;animation:typeCorrect .4s ease}
+.type-input.wrong{border-color:var(--c3);background:#fef2f2;animation:typeShake .4s ease}
+.type-feedback{font-size:14px;font-weight:700;min-height:20px;text-align:center}
+.type-feedback.correct{color:var(--c7)}
+.type-feedback.wrong{color:var(--c3)}
+@keyframes typeCorrect{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes typeShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}

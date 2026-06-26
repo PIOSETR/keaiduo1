@@ -100,6 +100,8 @@
     </div>
     <div class="card">
       <div class="card-title">⚙️ 听写设置</div>
+      <div class="setting-row"><span>🎯 听写模式</span>
+        <select id="dictMode"><option value="self">自检模式</option><option value="type">打字模式</option></select></div>
       <div class="setting-row"><span>🔁 朗读次数</span>
         <select id="repeatCount"><option value="1">1次</option><option value="2" selected>2次</option><option value="3">3次</option></select></div>
       <div class="setting-row"><span>🔀 随机顺序</span>
@@ -122,6 +124,12 @@
       <div class="word-pinyin" id="wordPinyin"></div>
       <div class="speaker-wrap">
         <button class="speaker-btn" id="speakerBtn">🔊<div class="sound-waves"></div></button>
+      </div>
+      <!-- 打字模式输入区 -->
+      <div class="type-input-wrap hidden" id="typeInputWrap">
+        <input type="text" class="type-input" id="typeInput" placeholder="在这里输入你听到的字词..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button class="btn btn-success btn-lg" id="typeSubmitBtn">✅ 确认</button>
+        <div class="type-feedback" id="typeFeedback"></div>
       </div>
       <div class="dictate-actions">
         <button class="btn btn-success btn-block btn-lg" id="showAnsBtn">👀 显示答案</button>
