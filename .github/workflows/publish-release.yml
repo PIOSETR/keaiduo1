@@ -1,0 +1,48 @@
+# 喵喵听写 — 发布 APK 到 Release（手动触发）
+name: Publish APK Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (如 v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download latest APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: meow-dictate-apk
+          path: ./apk
+          run-id: ${{ github.run_id }}
+        continue-on-error: true
+
+      - name: Build APK if artifact not found
+        if: steps.download.outcome == 'failure'
+        run: |
+          echo "No cached artifact, building from source..."
+          
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.event.inputs.version }}
+          name: 喵喵听写 ${{ github.event.inputs.version }}
+          body: |
+            📱 喵喵听写 APK 发布
+            
+            下载 APK 安装到安卓手机使用。
+            
+            扫码或点击下方链接下载：
+            https://github.com/PIOSETR/keaiduo1/releases/tag/${{ github.event.inputs.version }}
+          artifacts: app-build/build/meow-dictate.apk
+          makeLatest: true
