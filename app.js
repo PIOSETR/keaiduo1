@@ -4,47 +4,80 @@
 
 /* ---------- 多用户存储前缀 ---------- */
 function getUserStorageKey(baseKey) {
-  var userId = localStorage.getItem('currentUser') || 'default';
-  if (userId === 'default') return baseKey;
-  return baseKey + '_' + userId;
+  try {
+    var userId = localStorage.getItem('currentUser') || 'default';
+    if (userId === 'default') return baseKey;
+    return baseKey + '_' + userId;
+  } catch(e) {
+    return baseKey;
+  }
 }
 // 覆盖 words.js 中的存储函数以支持多用户
 loadWords  = function() {
-  var key = getUserStorageKey('dw');
-  return JSON.parse(localStorage.getItem(key)) || DEFAULT;
+  try {
+    var key = getUserStorageKey('dw');
+    var d = localStorage.getItem(key);
+    if (d) {
+      var parsed = JSON.parse(d);
+      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length >= 1) return parsed;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT));
 };
 saveWords  = function() {
-  var key = getUserStorageKey('dw');
-  localStorage.setItem(key, JSON.stringify(store.words));
+  try {
+    var key = getUserStorageKey('dw');
+    localStorage.setItem(key, JSON.stringify(store.words));
+  } catch(e) {}
 };
 loadErrors = function() {
-  var key = getUserStorageKey('de');
-  return JSON.parse(localStorage.getItem(key)) || [];
+  try {
+    var key = getUserStorageKey('de');
+    var d = localStorage.getItem(key);
+    if (d) {
+      var parsed = JSON.parse(d);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+  } catch(e) {}
+  return [];
 };
 saveErrors = function() {
-  var key = getUserStorageKey('de');
-  localStorage.setItem(key, JSON.stringify(store.errors));
-  updateErrorDot();
+  try {
+    var key = getUserStorageKey('de');
+    localStorage.setItem(key, JSON.stringify(store.errors));
+    updateErrorDot();
+  } catch(e) {}
 };
 // 覆盖 game.js 中的游戏化存储函数
 initGameState = function() {
-  var p = getUserStorageKey('');
-  store.xp          = parseInt(localStorage.getItem(p + 'xp'))  || 0;
-  store.level       = parseInt(localStorage.getItem(p + 'lv'))  || 1;
-  store.totalWords  = parseInt(localStorage.getItem(p + 'tw'))  || 0;
-  store.streak      = parseInt(localStorage.getItem(p + 'st'))  || 0;
-  store.lastDate    = localStorage.getItem(p + 'ld') || '';
-  store.achievements = JSON.parse(localStorage.getItem(p + 'ach')) || [];
+  try {
+    var p = getUserStorageKey('');
+    store.xp          = parseInt(localStorage.getItem(p + 'xp'))  || 0;
+    store.level       = parseInt(localStorage.getItem(p + 'lv'))  || 1;
+    store.totalWords  = parseInt(localStorage.getItem(p + 'tw'))  || 0;
+    store.streak      = parseInt(localStorage.getItem(p + 'st'))  || 0;
+    store.lastDate    = localStorage.getItem(p + 'ld') || '';
+    try {
+      store.achievements = JSON.parse(localStorage.getItem(p + 'ach')) || [];
+    } catch(e) {
+      store.achievements = [];
+    }
+  } catch(e) {
+    store.xp = 0; store.level = 1; store.totalWords = 0; store.streak = 0;
+    store.lastDate = ''; store.achievements = [];
+  }
 };
 saveGame = function() {
-  var p = getUserStorageKey('');
-  localStorage.setItem(p + 'xp',  store.xp);
-  localStorage.setItem(p + 'lv',  store.level);
-  localStorage.setItem(p + 'tw',  store.totalWords);
-  localStorage.setItem(p + 'st',  store.streak);
-  localStorage.setItem(p + 'ld',  store.lastDate);
-  localStorage.setItem(p + 'ach', JSON.stringify(store.achievements));
-  updateLevelBadge();
+  try {
+    var p = getUserStorageKey('');
+    localStorage.setItem(p + 'xp',  store.xp);
+    localStorage.setItem(p + 'lv',  store.level);
+    localStorage.setItem(p + 'tw',  store.totalWords);
+    localStorage.setItem(p + 'st',  store.streak);
+    localStorage.setItem(p + 'ld',  store.lastDate);
+    localStorage.setItem(p + 'ach', JSON.stringify(store.achievements));
+    updateLevelBadge();
+  } catch(e) {}
 };
 
 /* ---------- 全局状态 ---------- */

@@ -4,33 +4,60 @@
 
 /* ---------- TTS 朗读 ---------- */
 let zhVoice = null;
+let voicesLoaded = false;
+
 function findZhVoice() {
   return new Promise(resolve => {
     const voices = window.speechSynthesis.getVoices();
-    zhVoice = voices.find(v => v.lang.startsWith('zh') && v.localService) ||
+    zhVoice = voices.find(v => v.lang.startsWith('zh-CN') && v.localService) ||
+              voices.find(v => v.lang.startsWith('zh-CN')) ||
               voices.find(v => v.lang.startsWith('zh')) || null;
+    voicesLoaded = true;
     resolve(zhVoice);
   });
 }
-// 某些浏览器异步加载 voices
+
 if (window.speechSynthesis.onvoiceschanged !== undefined) {
   window.speechSynthesis.onvoiceschanged = findZhVoice;
 }
-// 主动查找
+
 findZhVoice();
 
 function speak(text, cb) {
+  if (!window.speechSynthesis) {
+    if (cb) cb();
+    return;
+  }
+  
   if (store.speaking) { window.speechSynthesis.cancel(); }
+  
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'zh-CN';
   u.rate = 0.95;
   u.pitch = 1.0;
-  // 尽量选择普通话发音人
-  if (zhVoice) u.voice = zhVoice;
+  u.volume = 1.0;
+  
+  if (zhVoice) {
+    u.voice = zhVoice;
+  }
+  
   store.speaking = true;
-  u.onend = () => { store.speaking = false; if (cb) cb(); };
-  u.onerror = () => { store.speaking = false; if (cb) cb(); };
-  window.speechSynthesis.speak(u);
+  u.onend = function() {
+    store.speaking = false;
+    if (cb) cb();
+  };
+  u.onerror = function(event) {
+    store.speaking = false;
+    console.warn('TTS error:', event.error);
+    if (cb) cb();
+  };
+  
+  try {
+    window.speechSynthesis.speak(u);
+  } catch(e) {
+    store.speaking = false;
+    if (cb) cb();
+  }
 }
 
 /* ---------- 简易音效（Web Audio API） ---------- */
