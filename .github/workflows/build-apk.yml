@@ -1,4 +1,4 @@
-# 喵喵听写 — 自动构建 Android APK
+# 喵喵听写 — 自动构建 Android APK（独立构建）
 name: Build Android APK
 
 on:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -21,20 +21,24 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Sync web assets to Android
+      - name: Install required SDK components
         run: |
-          rm -rf android/app/src/main/assets/public
-          mkdir -p android/app/src/main/assets/public
-          cp -r index.html style.css words.js game.js audio.js app.js manifest.json sw.js icon-192.png icon-512.png android/app/src/main/assets/public/
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Sync web assets
+        run: |
+          rm -rf app-build/assets
+          mkdir -p app-build/assets
+          cp -r index.html style.css words.js game.js audio.js app.js manifest.json sw.js icon-192.png icon-512.png app-build/assets/
 
       - name: Build APK
-        working-directory: ./android
+        working-directory: ./app-build
         run: |
-          ./gradlew assembleDebug --no-daemon
+          bash build-apk.sh
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: meow-dictate-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: app-build/build/meow-dictate.apk
           if-no-files-found: error
