@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">喵喵听写</string>
+    <string name="title_activity_main">喵喵听写</string>
+    <string name="package_name">com.meow.dictate</string>
+    <string name="custom_url_scheme">com.meow.dictate</string>
+</resources>

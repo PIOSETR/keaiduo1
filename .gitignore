@@ -1,6 +1,9 @@
 node_modules/
-android/
 www/
+android/.gradle/
+android/app/build/
+android/build/
+android/capacitor-cordova-android-plugins/build/
 app-build/build/
 app-build/debug.keystore
 *.apk
