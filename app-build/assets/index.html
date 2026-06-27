@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="喵喵听写">
+<meta name="theme-color" content="#FF7B42">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
+<title>喵喵听写</title>
+</head>
+<body>
+
+<!-- 背景装饰 -->
+<div class="bg-decor cloud1">☁️</div>
+<div class="bg-decor cloud2">☁️</div>
+<div class="bg-decor cloud3">☁️</div>
+<div class="bg-decor cloud4">☁️</div>
+<div class="bg-decor star1">✨</div>
+<div class="bg-decor star2">✨</div>
+<div class="bg-decor star3">✨</div>
+
+<!-- 顶栏 -->
+<header class="app-bar" id="appBar">
+  <div class="cat-avatar">🐱</div>
+  <div class="title-wrap">
+    <h1>喵喵听写</h1>
+    <div class="subtitle" id="appBarSub">小学语文听写练习</div>
+  </div>
+  <span class="level-badge" id="levelBadge">🌟 Lv.1</span>
+</header>
+
+<!-- 底部导航 -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-item active" data-page="dictate">
+    <span class="nav-icon">📖</span><span>听写</span>
+  </button>
+  <button class="nav-item" data-page="library">
+    <span class="nav-icon">📚</span><span>词库</span>
+  </button>
+  <button class="nav-item" data-page="custom">
+    <span class="nav-icon">✏️</span><span>自定义</span>
+  </button>
+  <button class="nav-item" data-page="errors">
+    <span class="icon-wrap">
+      <span class="nav-icon">📝</span><span class="dot" id="errorDot"></span>
+    </span><span>错词本</span>
+  </button>
+</nav>
+
+<!-- 安装横幅 -->
+<div class="install-banner" id="installBanner">
+  <span class="msg">📱 将「喵喵听写」添加到主屏幕，像App一样使用！</span>
+  <button class="close-btn" id="installClose">✕</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 撒花容器 -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<!-- 成就弹窗 -->
+<div class="achieve-popup" id="achievePopup">
+  <span class="ach-icon" id="achIcon">🏆</span>
+  <div class="ach-title" id="achTitle"></div>
+  <div class="ach-desc" id="achDesc"></div>
+</div>
+
+<!-- ==================== 听写页 ==================== -->
+<div id="page-dictate" class="page active">
+
+  <div class="streak-bar" id="streakBar">
+    <span class="streak-fire">🔥</span>
+    <span class="streak-info">连续打卡</span>
+    <span class="streak-days" id="streakDays">0</span>
+    <span class="streak-info">天</span>
+    <span style="font-size:11px;color:var(--txt3);margin-left:auto" id="streakToday"></span>
+  </div>
+
+  <!-- 设置区 -->
+  <div id="dictateSetup">
+    <div class="card">
+      <div class="card-title">🐱 选择年级</div>
+      <div class="grade-grid" id="gradeGrid"></div>
+    </div>
+    <div class="card" id="lessonCard">
+      <div class="card-title">📖 选择课程</div>
+      <div class="lesson-grid" id="lessonGrid"></div>
+    </div>
+    <div class="card" id="previewCard">
+      <div class="card-title flex-between">
+        <span>📝 本课生词</span>
+        <span class="text-note text-note-light" id="wordCount">0个词</span>
+      </div>
+      <div class="word-tags" id="wordPreview"></div>
+      <button class="btn btn-primary btn-block btn-lg mt-8" id="startBtn">🎧 开始听写</button>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ 听写设置</div>
+      <div class="setting-row"><span>🎯 听写模式</span>
+        <select id="dictMode"><option value="self">自检模式</option><option value="type">打字模式</option></select></div>
+      <div class="setting-row"><span>🔁 朗读次数</span>
+        <select id="repeatCount"><option value="1">1次</option><option value="2" selected>2次</option><option value="3">3次</option></select></div>
+      <div class="setting-row"><span>🔀 随机顺序</span>
+        <select id="shuffleMode"><option value="0">按顺序</option><option value="1">随机打乱</option></select></div>
+      <div class="setting-row"><span>📢 朗读拼音</span>
+        <select id="readPinyin"><option value="0">否</option><option value="1">是</option></select></div>
+    </div>
+  </div>
+
+  <!-- 听写进行中 -->
+  <div id="dictateProgress" class="card hidden">
+    <div class="cat-mascot thinking" id="mascotProgress">🐱</div>
+    <div class="dictate-area">
+      <div class="progress-info">
+        <span id="progText">第1/10个</span>
+        <span id="scoreText">✅ 0 | ❌ 0</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+      <div class="word-big" id="wordDisplay">?</div>
+      <div class="word-pinyin" id="wordPinyin"></div>
+      <div class="speaker-wrap">
+        <button class="speaker-btn" id="speakerBtn">🔊<div class="sound-waves"></div></button>
+      </div>
+      <!-- 打字模式输入区 -->
+      <div class="type-input-wrap hidden" id="typeInputWrap">
+        <input type="text" class="type-input" id="typeInput" placeholder="在这里输入你听到的字词..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button class="btn btn-success btn-lg" id="typeSubmitBtn">✅ 确认</button>
+        <div class="type-feedback" id="typeFeedback"></div>
+      </div>
+      <div class="dictate-actions">
+        <button class="btn btn-success btn-block btn-lg" id="showAnsBtn">👀 显示答案</button>
+        <div class="btn-group full-width hidden" id="markBtns">
+          <button class="btn btn-success btn-lg" id="correctBtn">✅ 写对了</button>
+          <button class="btn btn-danger btn-lg" id="wrongBtn">❌ 写错了</button>
+        </div>
+        <div class="sub-actions">
+          <button class="btn btn-info btn-sm" id="repeatBtn">🔊 再读一遍</button>
+          <button class="btn btn-outline btn-sm" id="skipBtn">⏭️ 跳过</button>
+          <button class="btn btn-outline btn-sm" id="endEarlyBtn">结束</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结果 -->
+  <div id="dictateResult" class="card hidden">
+    <div class="cat-mascot" id="mascotResult">🐱</div>
+    <div class="card-title justify-center">🏆 听写完成！</div>
+    <div class="stars-row" id="starsRow"></div>
+    <div class="score-display great" id="scoreDisplay">100分</div>
+    <div class="result-stat">正确 <span id="resCorrect">0</span> 个 · 错误 <span id="resWrong">0</span> 个 · 共 <span id="resTotal">0</span> 个</div>
+    <div class="result-stat" id="xpGain" style="color:var(--c5);font-weight:700"></div>
+    <div class="result-list" id="resultList"></div>
+    <div class="btn-group mt-12">
+      <button class="btn btn-primary" id="retryBtn">🔄 再听一次</button>
+      <button class="btn btn-warning hidden" id="reviewErrorBtn">📝 复习错词</button>
+      <button class="btn btn-outline" id="backHomeBtn">🏠 首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 词库页 ==================== -->
+<div id="page-library" class="page">
+  <div class="card">
+    <div class="card-title">📚 词库管理</div>
+    <div class="tab-selector">
+      <select id="libGrade"></select>
+      <select id="libLesson"></select>
+      <button class="btn btn-success btn-sm" id="addWordBtn">➕ 添加</button>
+    </div>
+    <div class="word-mgr-list" id="libWordList"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📥 批量导入</div>
+    <div class="batch-area">
+      <textarea id="batchInput" placeholder="每行一个词：汉字 拼音&#10;春天 chūn tiān&#10;花朵 huā duǒ"></textarea>
+      <div class="hint">每行一个词，汉字和拼音用空格隔开</div>
+      <button class="btn btn-info btn-sm mt-6 full-width" id="batchBtn">📥 导入到当前课程</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 自定义听写页 ==================== -->
+<div id="page-custom" class="page">
+  <div class="card">
+    <div class="card-title">✏️ 自定义听写</div>
+    <p class="text-muted">想听什么就写什么！输入你想练习的字词���自由听写 ✨</p>
+    <textarea id="customInput" placeholder="每行一个词：汉字 拼音&#10;例如：&#10;你好 nǐ hǎo&#10;世界 shì jiè&#10;快乐 kuài lè&#10;&#10;也可以只写汉字（拼音留�[...] 
+    <div class="button-row">
+      <button class="btn btn-info btn-sm flex-1" id="customParseBtn">📋 从剪贴板导入</button>
+      <button class="btn btn-warning btn-sm" id="customClearBtn">🗑️ 清空</button>
+    </div>
+    <div class="text-note mb-10"><span id="customWordCount">已输入 0 个词</span></div>
+    <button class="btn btn-primary btn-block btn-lg" id="customStartBtn">🎧 开始听写自定义词</button>
+  </div>
+  <div class="card">
+    <div class="card-title flex-between"><span>💾 保存的词列表</span><span class="text-note text-note-light" id="savedListCount">0个</span></div>
+    <div id="customSavedLists"></div>
+  </div>
+</div>
+
+<!-- ==================== 错词本页 ==================== -->
+<div id="page-errors" class="page">
+  <div class="card">
+    <div class="card-title">📝 错词本 <span class="text-note text-note-light" id="errCount">(0个)</span></div>
+    <div id="errorList"></div>
+    <div class="btn-group mt-12">
+      <button class="btn btn-primary" id="reviewErrBtn">📝 复习错词</button>
+      <button class="btn btn-outline btn-sm" id="clearErrBtn">🗑️ 清空</button>
+    </div>
+  </div>
+</div>
+
+<!-- 弹窗 -->
+<div class="modal-overlay" id="wordModal">
+  <div class="modal-sheet">
+    <h3 id="modalTitle">✏️ 添加生词</h3>
+    <input type="text" id="modalWord" placeholder="汉字（如：春天）" autocomplete="off">
+    <input type="text" id="modalPinyin" placeholder="拼音（如：chūn tiān）" autocomplete="off">
+    <input type="hidden" id="modalEditIdx" value="-1">
+    <div class="modal-acts">
+      <button class="btn btn-outline btn-sm" id="modalCancel">取消</button>
+      <button class="btn btn-primary btn-sm" id="modalConfirm">✅ 确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- JS 模块 -->
+<script src="words.js"></script>
+<script src="game.js"></script>
+<script src="audio.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

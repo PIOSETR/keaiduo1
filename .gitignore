@@ -1,0 +1,9 @@
+node_modules/
+android/
+www/
+app-build/build/
+app-build/debug.keystore
+*.apk
+*.idsig
+.DS_Store
+Thumbs.db
