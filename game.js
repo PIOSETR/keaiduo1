@@ -81,5 +81,5 @@ function initGameState() {
   store.totalWords  = parseInt(localStorage.getItem('tw'))  || 0;
   store.streak      = parseInt(localStorage.getItem('st'))  || 0;
   store.lastDate    = localStorage.getItem('ld') || '';
-  store.achievements = JSON.parse(localStorage.getItem('ach')) || [];
+  try { store.achievements = JSON.parse(localStorage.getItem('ach')) || []; } catch(e) { store.achievements = []; }
 }

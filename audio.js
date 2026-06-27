@@ -3,10 +3,30 @@
    =========================================================== */
 
 /* ---------- TTS 朗读 ---------- */
+let zhVoice = null;
+function findZhVoice() {
+  return new Promise(resolve => {
+    const voices = window.speechSynthesis.getVoices();
+    zhVoice = voices.find(v => v.lang.startsWith('zh') && v.localService) ||
+              voices.find(v => v.lang.startsWith('zh')) || null;
+    resolve(zhVoice);
+  });
+}
+// 某些浏览器异步加载 voices
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+  window.speechSynthesis.onvoiceschanged = findZhVoice;
+}
+// 主动查找
+findZhVoice();
+
 function speak(text, cb) {
   if (store.speaking) { window.speechSynthesis.cancel(); }
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'zh-CN'; u.rate = 0.85; u.pitch = 1.1;
+  u.lang = 'zh-CN';
+  u.rate = 0.95;
+  u.pitch = 1.0;
+  // 尽量选择普通话发音人
+  if (zhVoice) u.voice = zhVoice;
   store.speaking = true;
   u.onend = () => { store.speaking = false; if (cb) cb(); };
   u.onerror = () => { store.speaking = false; if (cb) cb(); };

@@ -70,9 +70,21 @@ const DEFAULT = {
 };
 
 /* ---------- 持久化存储 ---------- */
-function loadWords()  { return JSON.parse(localStorage.getItem('dw')) || DEFAULT; }
+function loadWords()  {
+  try {
+    const d = JSON.parse(localStorage.getItem('dw'));
+    if (d && typeof d === 'object' && Object.keys(d).length >= 6) return d;
+  } catch(e) {}
+  // 深拷贝 DEFAULT 防止意外修改
+  return JSON.parse(JSON.stringify(DEFAULT));
+}
 function saveWords() { localStorage.setItem('dw', JSON.stringify(store.words)); }
-function loadErrors() { return JSON.parse(localStorage.getItem('de')) || []; }
+function loadErrors() {
+  try {
+    const d = JSON.parse(localStorage.getItem('de'));
+    return Array.isArray(d) ? d : [];
+  } catch(e) { return []; }
+}
 function saveErrors() { localStorage.setItem('de', JSON.stringify(store.errors)); updateErrorDot(); }
 
 /* ---------- 预置词库修复：如果某个年级缺少 icon，补上 ---------- */
