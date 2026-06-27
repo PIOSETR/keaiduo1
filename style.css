@@ -81,7 +81,7 @@ body{
   flex:1;display:flex;flex-direction:column;align-items:center;
   padding:6px 0;border:none;background:none;font-size:10px;color:var(--txt3);
   cursor:pointer;transition:all .2s;outline:none;position:relative;
-  font-weight:500;
+  font-weight:500;touch-action:manipulation;
 }
 .nav-item .nav-icon{font-size:24px;line-height:1.2;margin-bottom:2px;transition:transform .2s}
 .nav-item:active .nav-icon{transform:scale(.85)}
@@ -124,9 +124,9 @@ body{
   padding:12px 20px;border:none;border-radius:20px;font-size:15px;font-weight:700;
   cursor:pointer;transition:all .15s;color:#fff;min-height:44px;
   box-shadow:0 4px 12px rgba(0,0,0,.1);outline:none;font-family:var(--font);
-  position:relative;overflow:hidden;
+  position:relative;overflow:hidden;touch-action:manipulation;
 }
-.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);opacity:0;transition:opacity .2s}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);opacity:0;transition:opacity .2s;pointer-events:none}
 .btn:active{transform:scale(.95)}.btn:active::after{opacity:1}
 .btn-primary{background:linear-gradient(135deg,var(--c1),var(--c3))}
 .btn-success{background:linear-gradient(135deg,var(--c7),#10b981)}
@@ -146,7 +146,7 @@ body{
   padding:16px 6px 12px;border-radius:var(--rs);text-align:center;
   border:2px solid #f0e4d0;background:linear-gradient(180deg,#fffdf7,#fff8ee);
   font-weight:700;cursor:pointer;transition:all .2s;color:var(--txt2);font-size:13px;
-  position:relative;overflow:hidden;
+  position:relative;overflow:hidden;touch-action:manipulation;
 }
 .grade-card:active{transform:scale(.95)}
 .grade-card .num{font-size:28px;display:block;font-weight:900;margin-bottom:2px;line-height:1}
@@ -162,7 +162,7 @@ body{
 .lesson-item{
   padding:10px 4px;border-radius:var(--rs);text-align:center;
   border:2px solid #f0e4d0;background:#fffdf7;font-size:13px;cursor:pointer;
-  transition:all .2s;color:var(--txt2);font-weight:600;
+  transition:all .2s;color:var(--txt2);font-weight:600;touch-action:manipulation;
 }
 .lesson-item:active{transform:scale(.95)}
 .lesson-item.selected{

@@ -2,13 +2,14 @@
   "name": "喵喵听写",
   "short_name": "喵喵听写",
   "description": "卡通风格小学语文听写练习App，猫咪陪你学汉字！语音朗读、星星评分、等级系统、每日打卡",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FFF8F0",
   "theme_color": "#FF7B42",
   "lang": "zh-CN",
-  "scope": ".",
+  "scope": "./",
+  "id": "meow-dictate-pwa",
   "icons": [
     {
       "src": "icon-192.png",

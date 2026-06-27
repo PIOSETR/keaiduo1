@@ -534,9 +534,9 @@ document.getElementById('clearErrBtn').addEventListener('click', () => {
 /* ===========================================================
    自定义听写
    =========================================================== */
-let customLists = JSON.parse(localStorage.getItem('dl')) || [];
+let customLists = (() => { try { return JSON.parse(localStorage.getItem('dl')) || []; } catch(e) { return []; } })();
 
-function saveCustomLists() { localStorage.setItem('dl', JSON.stringify(customLists)); renderCustomLists(); }
+function saveCustomLists() { try { localStorage.setItem('dl', JSON.stringify(customLists)); } catch(e) {} renderCustomLists(); }
 
 function parseCustomInput(text) {
   const words = []; let count = 0;
@@ -673,29 +673,60 @@ if ('serviceWorker' in navigator) {
 }
 
 let deferredPrompt;
+const installBanner = document.getElementById('installBanner');
+const installClose = document.getElementById('installClose');
+
+// 关闭横幅
+installClose.addEventListener('click', e => {
+  e.stopPropagation();
+  installBanner.classList.remove('show');
+  try { localStorage.setItem('pwa_banner_closed', '1'); } catch(e) {}
+});
+
+// 监听 beforeinstallprompt
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault(); deferredPrompt = e;
-  const banner = document.getElementById('installBanner');
-  if (!localStorage.getItem('pwa_installed')) {
-    banner.classList.add('show');
-    banner.addEventListener('click', () => {
-      banner.classList.remove('show');
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        localStorage.setItem('pwa_installed', '1');
-        deferredPrompt = null;
-      });
-    });
-  }
-  document.getElementById('installClose').addEventListener('click', e2 => {
-    e2.stopPropagation(); banner.classList.remove('show');
+  e.preventDefault();
+  deferredPrompt = e;
+  let installed = false, closed = false;
+  try { installed = localStorage.getItem('pwa_installed'); closed = localStorage.getItem('pwa_banner_closed'); } catch(e) {}
+  if (!installed && !closed) installBanner.classList.add('show');
+});
+
+// 点击横幅安装
+installBanner.addEventListener('click', () => {
+  if (!deferredPrompt) return;
+  installBanner.classList.remove('show');
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(result => {
+    if (result.outcome === 'accepted') {
+      try { localStorage.setItem('pwa_installed', '1'); } catch(e) {}
+      toast('✅ 安装成功！');
+    }
+    deferredPrompt = null;
   });
 });
 
+// 安装完成
 window.addEventListener('appinstalled', () => {
-  localStorage.setItem('pwa_installed', '1');
+  try { localStorage.setItem('pwa_installed', '1'); } catch(e) {}
+  installBanner.classList.remove('show');
   toast('✅ 安装成功！');
 });
+
+// 3秒后兜底：如果 beforeinstallprompt 没触发，显示手动安装指引
+setTimeout(() => {
+  if (!deferredPrompt) {
+    let installed = false, closed = false;
+    try { installed = localStorage.getItem('pwa_installed'); closed = localStorage.getItem('pwa_banner_closed'); } catch(e) {}
+    if (!installed && !closed) {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      installBanner.querySelector('.msg').textContent = isIOS
+        ? '📱 iOS: 点击浏览器底部「分享」→「添加到主屏幕」'
+        : '📱 点击浏览器菜单 →「添加到主屏幕」即可安装';
+      installBanner.classList.add('show');
+    }
+  }
+}, 3000);
 
 /* ===========================================================
    启动
