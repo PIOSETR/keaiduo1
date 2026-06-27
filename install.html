@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FF7B42">
+<title>安装 喵喵听写</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.install-page{padding:16px;max-width:500px;margin:0 auto}
+.install-page .card{margin-bottom:16px;padding:20px}
+.install-page h2{font-size:18px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.install-page .step{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+.install-page .step-num{width:28px;height:28px;border-radius:50%;background:var(--c1);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+.install-page .step-text{font-size:14px;color:var(--txt);line-height:1.6}
+.install-page .step-text small{display:block;color:var(--txt3);font-size:12px;margin-top:4px}
+.dl-btn{display:block;width:100%;padding:16px;font-size:18px;font-weight:800;border:none;border-radius:16px;cursor:pointer;text-align:center;text-decoration:none;transition:all .2s}
+.dl-btn.primary{background:linear-gradient(135deg,var(--c1),var(--c3));color:#fff;box-shadow:0 4px 16px rgba(255,107,107,.4)}
+.dl-btn.primary:active{transform:scale(.97)}
+.dl-btn.secondary{background:var(--card);color:var(--c1);border:2px solid var(--c1)}
+.dl-btn.secondary:active{transform:scale(.97)}
+.dl-btn .sub{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:4px}
+.qr-wrap{text-align:center;padding:16px 0}
+.qr-wrap img{width:180px;height:180px;border-radius:12px;border:2px solid #f0e8dc}
+.qr-wrap .label{font-size:12px;color:var(--txt3);margin-top:8px}
+.method-tabs{display:flex;gap:4px;margin-bottom:16px;background:#f5f0eb;border-radius:12px;padding:4px}
+.method-tab{flex:1;text-align:center;padding:10px;border:none;background:transparent;border-radius:10px;font-size:14px;font-weight:600;color:var(--txt2);cursor:pointer;transition:all .2s}
+.method-tab.active{background:#fff;color:var(--c1);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.method-panel{display:none}
+.method-panel.active{display:block}
+.browser-icon{font-size:32px;text-align:center;margin:12px 0}
+.browser-step{background:#fdf9f3;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid var(--c2)}
+.browser-step .title{font-weight:700;font-size:14px;margin-bottom:4px}
+.browser-step .desc{font-size:13px;color:var(--txt2);line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="install-page">
+
+  <div style="text-align:center;padding:20px 0 8px">
+    <div style="font-size:48px;margin-bottom:8px">🐱</div>
+    <h1 style="font-size:22px;margin:0;color:var(--txt)">安装 喵喵听写</h1>
+    <p style="color:var(--txt3);font-size:13px;margin:6px 0 0">选择最适合你的方式</p>
+  </div>
+
+  <!-- 方式切换标签 -->
+  <div class="method-tabs">
+    <button class="method-tab active" data-method="apk">📱 APK 安装</button>
+    <button class="method-tab" data-method="pwa">🌐 网页安装</button>
+  </div>
+
+  <!-- ========== APK 方式 ========== -->
+  <div class="method-panel active" id="panel-apk">
+    <div class="card">
+      <h2>📦 下载 APK</h2>
+      <p style="font-size:13px;color:var(--txt2);margin:-8px 0 16px">适用于所有安卓手机（Android 5.0+）</p>
+
+      <a class="dl-btn primary" id="dlApkBtn" href="https://github.com/PIOSETR/keaiduo1/releases/tag/latest" target="_blank">
+        ⬇️ 下载 APK 安装包
+        <span class="sub">约 1-2 MB · 直接安装即可</span>
+      </a>
+
+      <div class="qr-wrap">
+        <div id="qrcodeContainer">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/PIOSETR/keaiduo1/releases/tag/latest" alt="扫码下载APK">
+        </div>
+        <div class="label">📱 用手机扫码下载</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📖 安装步骤</h2>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>下载 APK</strong><small>点击上方按钮或扫码下载安装包</small></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>允许安装未知应用</strong><small>安卓会提示"禁止安装未知来源应用"→ 点击"设置"→ 打开"允许安装"</small></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>点击安装</strong><small>安装完成后即可在桌面打开「喵喵听写」🐱</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PWA 网页方式 ========== -->
+  <div class="method-panel" id="panel-pwa">
+    <div class="card">
+      <h2>🌐 添加到主屏幕</h2>
+      <p style="font-size:13px;color:var(--txt2);margin:-8px 0 16px">无需下载安装包，像 App 一样使用</p>
+
+      <a class="dl-btn secondary" href="./index.html">
+        🏠 打开 喵喵听写
+        <span class="sub">然后按下面的步骤添加到主屏幕</span>
+      </a>
+    </div>
+
+    <div class="card">
+      <h2>📖 各浏览器设置步骤</h2>
+
+      <!-- Edge -->
+      <div class="browser-step">
+        <div class="browser-icon">🌐</div>
+        <div class="title">Microsoft Edge</div>
+        <div class="desc">
+          1. 点击底部菜单栏 <strong>「···」</strong>（更多）<br>
+          2. 选择 <strong>「添加到手机屏幕」</strong><br>
+          3. 点击 <strong>「添加」</strong> 即可在主屏幕看到图标
+        </div>
+      </div>
+
+      <!-- Chrome -->
+      <div class="browser-step">
+        <div class="browser-icon">▶️</div>
+        <div class="title">Google Chrome</div>
+        <div class="desc">
+          1. 点击右上角 <strong>「···」</strong>（菜单）<br>
+          2. 选择 <strong>「添加到主屏幕」</strong><br>
+          3. 点击 <strong>「添加」</strong>
+        </div>
+      </div>
+
+      <!-- 浏览器通用 -->
+      <div class="browser-step">
+        <div class="browser-icon">📱</div>
+        <div class="title">其他浏览器（UC / 夸克 / 华为等）</div>
+        <div class="desc">
+          1. 点击浏览器底部或顶部的 <strong>「菜单」</strong><br>
+          2. 找到 <strong>「添加到主屏幕」</strong> 或 <strong>「添加到桌面」</strong><br>
+          3. 确认添加即可
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:16px 0 32px;color:var(--txt3);font-size:12px">
+    有问题？在 GitHub 上提 <a href="https://github.com/PIOSETR/keaiduo1/issues" style="color:var(--c1)">Issue</a>
+  </div>
+</div>
+
+<script>
+// 切换安装方式
+document.querySelectorAll('.method-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.method-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.method-panel').forEach(function(p) { p.classList.remove('active'); });
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.method).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

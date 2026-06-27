@@ -1,7 +1,8 @@
-const CACHE_NAME = 'meow-dictate-v4';
+const CACHE_NAME = 'meow-dictate-v5';
 const ASSETS = [
   './',
   './index.html',
+  './install.html',
   './style.css',
   './words.js',
   './game.js',

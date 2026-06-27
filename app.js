@@ -721,12 +721,27 @@ let deferredPrompt;
 const installBanner = document.getElementById('installBanner');
 const installClose = document.getElementById('installClose');
 
+// 底部导航"安装"按钮 → 跳转到安装引导页
+document.getElementById('installNavBtn').addEventListener('click', function() {
+  window.location.href = './install.html';
+});
+
 // 关闭横幅
 installClose.addEventListener('click', e => {
   e.stopPropagation();
   installBanner.classList.remove('show');
   try { localStorage.setItem('pwa_banner_closed', '1'); } catch(e) {}
 });
+
+// 检测浏览器类型
+function getBrowserInfo() {
+  const ua = navigator.userAgent;
+  if (ua.includes('Edg')) return 'edge';
+  if (ua.includes('Chrome')) return 'chrome';
+  if (ua.includes('Firefox')) return 'firefox';
+  if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+  return 'other';
+}
 
 // 监听 beforeinstallprompt
 window.addEventListener('beforeinstallprompt', e => {
@@ -739,16 +754,19 @@ window.addEventListener('beforeinstallprompt', e => {
 
 // 点击横幅安装
 installBanner.addEventListener('click', () => {
-  if (!deferredPrompt) return;
-  installBanner.classList.remove('show');
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(result => {
-    if (result.outcome === 'accepted') {
-      try { localStorage.setItem('pwa_installed', '1'); } catch(e) {}
-      toast('✅ 安装成功！');
-    }
-    deferredPrompt = null;
-  });
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(result => {
+      if (result.outcome === 'accepted') {
+        try { localStorage.setItem('pwa_installed', '1'); } catch(e) {}
+        toast('✅ 安装成功！');
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    // 如果没有 beforeinstallprompt，跳转到安装引导页
+    window.location.href = './install.html';
+  }
 });
 
 // 安装完成
@@ -758,16 +776,24 @@ window.addEventListener('appinstalled', () => {
   toast('✅ 安装成功！');
 });
 
-// 3秒后兜底
+// 3秒后兜底（浏览器不支持 beforeinstallprompt）
 setTimeout(() => {
   if (!deferredPrompt) {
     let installed = false, closed = false;
     try { installed = localStorage.getItem('pwa_installed'); closed = localStorage.getItem('pwa_banner_closed'); } catch(e) {}
     if (!installed && !closed) {
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      installBanner.querySelector('.msg').textContent = isIOS
-        ? '📱 iOS: 点击浏览器底部「分享」→「添加到主屏幕」'
-        : '📱 点击浏览器菜单 →「添加到主屏幕」即可安装';
+      const ua = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(ua);
+      const isEdge = ua.includes('Edg');
+      let msg = '';
+      if (isIOS) {
+        msg = '📱 Safari: 底部「分享」→「添加到主屏幕」';
+      } else if (isEdge) {
+        msg = '🌐 Edge: 底部「···」→「添加到手机屏幕」';
+      } else {
+        msg = '📱 浏览器菜单 →「添加到主屏幕」即可安装';
+      }
+      installBanner.querySelector('.msg').textContent = msg;
       installBanner.classList.add('show');
     }
   }
