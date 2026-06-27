@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="icon" href="./icon-192.png">
+
 <title>喵喵听写</title>
 </head>
 <body>
@@ -33,6 +34,7 @@
     <div class="subtitle" id="appBarSub">小学语文听写练习</div>
   </div>
   <span class="level-badge" id="levelBadge">🌟 Lv.1</span>
+  <button class="user-btn" id="userBtn">👤</button>
 </header>
 
 <!-- 底部导航 -->
@@ -132,6 +134,7 @@
       <div class="type-input-wrap hidden" id="typeInputWrap">
         <input type="text" class="type-input" id="typeInput" placeholder="在这里输入你听到的字词..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <button class="btn btn-success btn-lg" id="typeSubmitBtn">✅ 确认</button>
+        <button class="btn btn-info btn-sm" id="voiceBtn">🎤 语音输入</button>
         <div class="type-feedback" id="typeFeedback"></div>
       </div>
       <div class="dictate-actions">
@@ -174,6 +177,7 @@
       <select id="libGrade"></select>
       <select id="libLesson"></select>
       <button class="btn btn-success btn-sm" id="addWordBtn">➕ 添加</button>
+      <button class="btn btn-outline btn-sm" id="printBtn">🖨️ 打印</button>
     </div>
     <div class="word-mgr-list" id="libWordList"></div>
   </div>
@@ -183,6 +187,14 @@
       <textarea id="batchInput" placeholder="每行一个词：汉字 拼音&#10;春天 chūn tiān&#10;花朵 huā duǒ"></textarea>
       <div class="hint">每行一个词，汉字和拼音用空格隔开</div>
       <button class="btn btn-info btn-sm mt-6 full-width" id="batchBtn">📥 导入到当前课程</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">💾 数据管理</div>
+    <div class="button-row">
+      <button class="btn btn-info btn-sm flex-1" id="exportBtn">📤 导出数据</button>
+      <button class="btn btn-warning btn-sm flex-1" id="importBtn">📥 导入数据</button>
+      <button class="btn btn-outline btn-sm flex-1" id="resetBtn">🗑️ 重置</button>
     </div>
   </div>
 </div>
@@ -228,6 +240,18 @@
     <div class="modal-acts">
       <button class="btn btn-outline btn-sm" id="modalCancel">取消</button>
       <button class="btn btn-primary btn-sm" id="modalConfirm">✅ 确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 用户切换面板 -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-sheet">
+    <h3>👤 切换用户</h3>
+    <div id="userList"></div>
+    <div class="modal-acts">
+      <button class="btn btn-primary btn-sm" id="addUserBtn">➕ 添加用户</button>
+      <button class="btn btn-outline btn-sm" id="userModalCancel">取消</button>
     </div>
   </div>
 </div>

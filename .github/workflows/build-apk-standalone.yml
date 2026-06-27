@@ -1,0 +1,37 @@
+# 喵喵听写 — 自动构建独立 APK（使用 app-build 目录）
+name: Build APK (Standalone)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK components
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Build APK
+        working-directory: ./app-build
+        run: |
+          chmod +x build-apk.sh
+          bash build-apk.sh
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: meow-dictate-standalone-apk
+          path: app-build/build/meow-dictate.apk
+          if-no-files-found: error

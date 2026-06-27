@@ -106,7 +106,9 @@ body{
   background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;
   box-shadow:0 2px 16px rgba(0,0,0,.05);border:2px solid #fef3e8;
   position:relative;overflow:hidden;
+  transition:transform .2s ease,box-shadow .2s ease;
 }
+.card:active{transform:scale(.99)}
 .card-title{font-size:15px;font-weight:800;color:var(--txt2);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 
 /* ---------- Utility ---------- */
@@ -127,7 +129,7 @@ body{
   position:relative;overflow:hidden;touch-action:manipulation;
 }
 .btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);opacity:0;transition:opacity .2s;pointer-events:none}
-.btn:active{transform:scale(.95)}.btn:active::after{opacity:1}
+.btn:active{transform:scale(.96)}.btn:active::after{opacity:1}
 .btn-primary{background:linear-gradient(135deg,var(--c1),var(--c3))}
 .btn-success{background:linear-gradient(135deg,var(--c7),#10b981)}
 .btn-danger{background:linear-gradient(135deg,var(--c3),#e74c3c)}
@@ -220,10 +222,16 @@ body{
 .cat-mascot{
   width:80px;height:80px;margin:0 auto 8px;position:relative;
   font-size:60px;display:flex;align-items:center;justify-content:center;transition:transform .3s;
+  animation:catBreathe 3s ease-in-out infinite;
 }
-.cat-mascot.happy{animation:mascotBounce .5s ease}
-.cat-mascot.sad{animation:mascotShake .4s ease}
-.cat-mascot.thinking{animation:mascotTilt .6s ease infinite}
+.cat-mascot.happy{animation:catBounce .4s ease}
+.cat-mascot.sad{animation:catSad .5s ease}
+.cat-mascot.thinking{animation:catTilt 2s ease-in-out infinite}
+@keyframes catBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes catBounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}60%{transform:translateY(-4px)}}
+@keyframes catSad{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+@keyframes catTilt{0%,100%{transform:rotate(0)}25%{transform:rotate(5deg)}75%{transform:rotate(-5deg)}}
+/* old mascot keyframes kept for backward compatibility */
 @keyframes mascotBounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-16px)}50%{transform:translateY(0)}70%{transform:translateY(-8px)}}
 @keyframes mascotShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 @keyframes mascotTilt{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
@@ -264,9 +272,11 @@ body{
 .custom-textarea{width:100%;padding:12px;border:2px solid #f0e4d0;border-radius:var(--rs);font-size:14px;resize:vertical;min-height:140px;outline:none;font-family:var(--font);background:#fffdf7;font-weight:500}
 
 /* ---------- Error Book ---------- */
-.empty-state{text-align:center;padding:40px 20px;color:#e0d0c0}
-.empty-state .icon{font-size:56px;display:block;margin-bottom:8px}
-.empty-state p{font-size:14px;font-weight:600}
+.empty-state{text-align:center;padding:60px 20px;color:#e0d0c0;transition:all .3s ease}
+.empty-state .icon{font-size:56px;display:block;margin-bottom:12px;transition:transform .3s ease}
+.empty-state .icon:hover{transform:scale(1.15)}
+.empty-state p{font-size:15px;font-weight:700;color:var(--txt3);line-height:1.6}
+.empty-state .sub-text{font-size:12px;color:#d5c5b5;margin-top:6px;font-weight:500}
 .error-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;margin-bottom:4px;background:#fef2f2;color:var(--c3);font-size:14px;font-weight:600}
 .error-item .ew{font-weight:700}
 
@@ -297,7 +307,8 @@ body{
   z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90%;
   font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);
 }
-.toast.show{opacity:1}
+.toast.show{opacity:1;animation:toastIn .3s ease}
+@keyframes toastIn{0%{opacity:0;transform:translate(-50%,-10px) scale(.9)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
 
 /* ---------- Install Banner ---------- */
 .install-banner{
@@ -372,3 +383,19 @@ body{
 .type-feedback.wrong{color:var(--c3)}
 @keyframes typeCorrect{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 @keyframes typeShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+/* ---------- User Button ---------- */
+.user-btn{background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.4);border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;color:#fff;padding:0;line-height:1;margin-left:4px}
+.user-btn:active{transform:scale(.9);background:rgba(255,255,255,.35)}
+
+/* ---------- User List ---------- */
+#userList .user-item{padding:12px 14px;border-radius:12px;cursor:pointer;font-size:15px;font-weight:600;color:var(--txt2);margin-bottom:4px;transition:background .2s;background:#fffdf7;border:2px solid #f0e4d0}
+#userList .user-item.active{border-color:var(--c5);background:#f5f0ff;color:var(--c5)}
+#userList .user-item:active{background:#ede4ff}
+
+/* ---------- Voice Button ---------- */
+#voiceBtn{font-size:13px;padding:6px 14px}
+
+/* ---------- 页面过渡动画 ---------- */
+.page{transition:opacity .25s ease,transform .25s ease;opacity:0;transform:translateY(8px)}
+.page.active{opacity:1;transform:translateY(0)}
