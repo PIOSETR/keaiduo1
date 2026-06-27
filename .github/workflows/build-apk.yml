@@ -1,10 +1,14 @@
-# 喵喵听写 — 自动构建 Android APK 并发布到 Release
+# 喵喵听写 — 自动构建 Android APK
 name: Build Android APK
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
 
 jobs:
   build:
@@ -36,27 +40,9 @@ jobs:
         run: |
           bash build-apk.sh
 
-      - name: Upload APK as Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: meow-dictate-apk
           path: app-build/build/meow-dictate.apk
           if-no-files-found: error
-
-      - name: Create/Update Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: latest
-          name: 喵喵听写 APK
-          body: |
-            🤖 最新版自动构建 APK
-            
-            📅 构建时间：${{ github.event.repository.updated_at }}
-            📝 提交：${{ github.sha }}
-            
-            扫码或点击下方链接下载安装到安卓手机。
-          artifacts: app-build/build/meow-dictate.apk
-          allowUpdates: true
-          removeArtifacts: true
-          replacesArtifacts: true
-          makeLatest: true
