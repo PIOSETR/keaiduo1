@@ -2,6 +2,51 @@
    js/app.js  —  主应用逻辑：全局状态、导航、听写流程、词库、错词本、自定义、PWA
    =========================================================== */
 
+/* ---------- 多用户存储前缀 ---------- */
+function getUserStorageKey(baseKey) {
+  var userId = localStorage.getItem('currentUser') || 'default';
+  if (userId === 'default') return baseKey;
+  return baseKey + '_' + userId;
+}
+// 覆盖 words.js 中的存储函数以支持多用户
+loadWords  = function() {
+  var key = getUserStorageKey('dw');
+  return JSON.parse(localStorage.getItem(key)) || DEFAULT;
+};
+saveWords  = function() {
+  var key = getUserStorageKey('dw');
+  localStorage.setItem(key, JSON.stringify(store.words));
+};
+loadErrors = function() {
+  var key = getUserStorageKey('de');
+  return JSON.parse(localStorage.getItem(key)) || [];
+};
+saveErrors = function() {
+  var key = getUserStorageKey('de');
+  localStorage.setItem(key, JSON.stringify(store.errors));
+  updateErrorDot();
+};
+// 覆盖 game.js 中的游戏化存储函数
+initGameState = function() {
+  var p = getUserStorageKey('');
+  store.xp          = parseInt(localStorage.getItem(p + 'xp'))  || 0;
+  store.level       = parseInt(localStorage.getItem(p + 'lv'))  || 1;
+  store.totalWords  = parseInt(localStorage.getItem(p + 'tw'))  || 0;
+  store.streak      = parseInt(localStorage.getItem(p + 'st'))  || 0;
+  store.lastDate    = localStorage.getItem(p + 'ld') || '';
+  store.achievements = JSON.parse(localStorage.getItem(p + 'ach')) || [];
+};
+saveGame = function() {
+  var p = getUserStorageKey('');
+  localStorage.setItem(p + 'xp',  store.xp);
+  localStorage.setItem(p + 'lv',  store.level);
+  localStorage.setItem(p + 'tw',  store.totalWords);
+  localStorage.setItem(p + 'st',  store.streak);
+  localStorage.setItem(p + 'ld',  store.lastDate);
+  localStorage.setItem(p + 'ach', JSON.stringify(store.achievements));
+  updateLevelBadge();
+};
+
 /* ---------- 全局状态 ---------- */
 const store = {
   words:        loadWords(),
@@ -736,3 +781,232 @@ renderLessons();
 updateLevelBadge();
 updateStreakUI();
 checkStreak();
+
+/* ===========================================================
+   语音识别（Web Speech API）
+   =========================================================== */
+(function() {
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var voiceBtn = document.getElementById('voiceBtn');
+  if (!SpeechRecognition || !voiceBtn) {
+    if (voiceBtn) voiceBtn.style.display = 'none';
+    return;
+  }
+  var recognition = new SpeechRecognition();
+  recognition.lang = 'zh-CN';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  var isListening = false;
+  voiceBtn.addEventListener('click', function() {
+    if (isListening) { recognition.stop(); return; }
+    try {
+      recognition.start();
+      isListening = true;
+      voiceBtn.textContent = '🔴 录音中...';
+    } catch(e) { toast('语音识别启动失败'); }
+  });
+  recognition.onresult = function(event) {
+    var result = event.results[0][0].transcript;
+    document.getElementById('typeInput').value = result;
+    document.getElementById('typeSubmitBtn').click();
+  };
+  recognition.onend = function() {
+    isListening = false;
+    voiceBtn.textContent = '🎤 语音输入';
+  };
+  recognition.onerror = function(event) {
+    isListening = false;
+    voiceBtn.textContent = '🎤 语音输入';
+    if (event.error !== 'no-speech' && event.error !== 'aborted')
+      toast('语音识别失败: ' + event.error);
+  };
+})();
+
+/* ===========================================================
+   打印练习纸
+   =========================================================== */
+document.getElementById('printBtn').addEventListener('click', printWorksheet);
+
+function printWorksheet() {
+  var g = store.words[document.getElementById('libGrade').value];
+  var l = g.lessons[parseInt(document.getElementById('libLesson').value)];
+  if (!l || !l.words.length) { toast('当前课程没有词语'); return; }
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('zh-CN');
+  var title = '听写练习 — ' + g.name + ' ' + l.name;
+  var rows = '';
+  l.words.forEach(function(w) {
+    rows += '<tr><td class="word-cell">' + w[0] + '</td><td class="pinyin-cell">' + (w[1]||'') + '</td><td class="write-cell"></td></tr>';
+  });
+  var html = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>' + title + '</title><style>'
+    + '@page{size:A4;margin:20mm}'
+    + 'body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;color:#333}'
+    + 'h1{text-align:center;font-size:18px;margin-bottom:4px}'
+    + '.date{text-align:center;font-size:12px;color:#999;margin-bottom:20px}'
+    + 'table{width:100%;border-collapse:collapse}'
+    + 'th{background:#f5f0ff;padding:8px;font-size:13px;border:1px solid #ddd}'
+    + 'td{padding:8px;border:1px solid #ddd;text-align:center;font-size:14px}'
+    + '.word-cell{width:30%;font-size:18px;font-weight:700}'
+    + '.pinyin-cell{width:30%;color:#888}'
+    + '.write-cell{width:40%;height:40px}'
+    + '</style></head><body>'
+    + '<h1>' + title + '</h1>'
+    + '<div class="date">' + dateStr + '</div>'
+    + '<table><thead><tr><th>词语</th><th>拼音</th><th>书写</th></tr></thead><tbody>' + rows + '</tbody></table>'
+    + '<p style="text-align:center;color:#bbb;font-size:11px;margin-top:20px">—— 喵喵听写 练习纸 ——</p>'
+    + '</body></html>';
+  var w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function() { w.print(); }, 500);
+}
+
+/* ===========================================================
+   数据导出 / 导入 / 重置
+   =========================================================== */
+document.getElementById('exportBtn').addEventListener('click', exportData);
+document.getElementById('importBtn').addEventListener('click', importData);
+document.getElementById('resetBtn').addEventListener('click', resetData);
+
+function exportData() {
+  var p = getUserStorageKey('');
+  var data = {
+    dw: localStorage.getItem(getUserStorageKey('dw')),
+    de: localStorage.getItem(getUserStorageKey('de')),
+    dl: localStorage.getItem(getUserStorageKey('dl')),
+    xp: localStorage.getItem(p + 'xp'),
+    lv: localStorage.getItem(p + 'lv'),
+    tw: localStorage.getItem(p + 'tw'),
+    st: localStorage.getItem(p + 'st'),
+    ld: localStorage.getItem(p + 'ld'),
+    ach: localStorage.getItem(p + 'ach'),
+    exportedAt: new Date().toISOString()
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '喵喵听写_备份_' + new Date().toLocaleDateString('zh-CN').replace(/\//g, '-') + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📤 数据已导出');
+}
+
+function importData() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        var p = getUserStorageKey('');
+        var keyMap = {
+          dw: getUserStorageKey('dw'),
+          de: getUserStorageKey('de'),
+          dl: getUserStorageKey('dl'),
+          xp: p + 'xp',
+          lv: p + 'lv',
+          tw: p + 'tw',
+          st: p + 'st',
+          ld: p + 'ld',
+          ach: p + 'ach'
+        };
+        Object.keys(keyMap).forEach(function(k) {
+          if (data[k] !== undefined) localStorage.setItem(keyMap[k], data[k]);
+        });
+        toast('📥 数据已导入，页面即将刷新');
+        setTimeout(function() { location.reload(); }, 1000);
+      } catch(err) { toast('⚠️ 文件格式错误'); }
+    };
+    reader.readAsText(file);
+  });
+  input.click();
+}
+
+function resetData() {
+  if (!confirm('⚠️ 确定要重置所有数据吗？\n此操作无法撤销！')) return;
+  if (!confirm('再次确认：所有词库修改、错词本、等级和经验都将被清除！')) return;
+  var p = getUserStorageKey('');
+  var keys = [
+    getUserStorageKey('dw'),
+    getUserStorageKey('de'),
+    getUserStorageKey('dl'),
+    p + 'xp', p + 'lv', p + 'tw',
+    p + 'st', p + 'ld', p + 'ach'
+  ];
+  keys.forEach(function(k) { localStorage.removeItem(k); });
+  toast('🗑️ 已重置所有数据，页面即将刷新');
+  setTimeout(function() { location.reload(); }, 1000);
+}
+
+/* ===========================================================
+   多用户切换 — 用户管理
+   =========================================================== */
+var USERS_KEY = 'users';
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch(e) { return []; }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+function renderUserList() {
+  var el = document.getElementById('userList');
+  var users = getUsers();
+  var current = localStorage.getItem('currentUser') || 'default';
+  var html = '';
+  html += '<div class="user-item' + (current === 'default' ? ' active' : '') + '" data-id="default">👤 默认用户</div>';
+  users.forEach(function(u) {
+    html += '<div class="user-item' + (current === u.id ? ' active' : '') + '" data-id="' + u.id + '">👤 ' + u.name + '</div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.user-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      if (item.dataset.id === getCurrentUserId()) { document.getElementById('userModal').classList.remove('show'); return; }
+      if (confirm('切换用户后将刷新页面，确定切换吗？')) switchUser(item.dataset.id);
+    });
+  });
+}
+
+function getCurrentUserId() {
+  return localStorage.getItem('currentUser') || 'default';
+}
+
+function switchUser(userId) {
+  localStorage.setItem('currentUser', userId);
+  location.reload();
+}
+
+document.getElementById('userBtn').addEventListener('click', function() {
+  renderUserList();
+  document.getElementById('userModal').classList.add('show');
+});
+
+document.getElementById('userModalCancel').addEventListener('click', function() {
+  document.getElementById('userModal').classList.remove('show');
+});
+
+document.getElementById('addUserBtn').addEventListener('click', function() {
+  var name = prompt('请输入新用户昵称：');
+  if (!name || !name.trim()) return;
+  var users = getUsers();
+  var id = 'u' + Date.now() + Math.random().toString(36).slice(2,6);
+  users.push({ name: name.trim(), id: id });
+  saveUsers(users);
+  switchUser(id);
+});
+
+// 覆盖自定义词列表存储以支持多用户
+customLists = (function() {
+  try { return JSON.parse(localStorage.getItem(getUserStorageKey('dl'))) || []; } catch(e) { return []; }
+})();
+saveCustomLists = function() {
+  try { localStorage.setItem(getUserStorageKey('dl'), JSON.stringify(customLists)); } catch(e) {}
+  renderCustomLists();
+};
